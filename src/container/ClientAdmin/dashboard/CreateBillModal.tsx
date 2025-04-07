@@ -133,27 +133,31 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
       const payload = {
         totalAmount: totalAmount,
         selectedProducts: selectedProducts?.map((idx: any) => {
-          // Calculate total and GST amount per product
-          const gstAmountPerUnit = profileData?.overAllGstToggle === 'on' ? idx.gstAmount : 0;
-          const totalGstAmount = gstAmountPerUnit * idx.quantity; // GST for all units
+            // Calculate total and GST amount per product
+            const gstAmountPerUnit = profileData?.overAllGstToggle === 'on' ? idx.gstAmount : 0;
+            const totalGstAmount = gstAmountPerUnit * idx.quantitySelected; // GST for all units
 
-          return {
-            productId: idx?._id,
-            quantity: idx?.quantity,
-            name: idx?.name,
-            price: idx?.price,
-            gstAmount: totalGstAmount,  // Store total GST per product
-            total: profileData?.overAllGstToggle === 'on'
-              ? (idx.price + idx.gstAmount) * idx.quantity
-              : idx.price * idx.quantity
-          };
+            return {
+                productId: idx?._id,
+                quantity: idx?.quantitySelected,
+                name: idx?.name,
+                price: idx.price,
+                actualPrice: idx?.actualPrice,
+                profitMargin: idx?.profitMargin,
+                gstAmount: totalGstAmount,  // Store total GST per product
+                gstWithoutTotal: (idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx.price) * idx.quantitySelected,
+                gstWithTotal: profileData?.overAllGstToggle === 'on'
+                    ? ((idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx.price) + idx.gstAmount) * idx.quantitySelected
+                    : (idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx.price) * idx.quantitySelected,
+                productAddedFromStock: idx?.productAddedFromStock
+            }
         }),
         employee: data?.employee ? data?.employee : '',
         customer: {
           name: data?.customerName ? data?.customerName : '',
           mobile: data?.customerMobile ? data?.customerMobile : ''
         }
-      }
+    };
 
       console.log(payload);
       const postApi = await postCreateBillApi(payload)
@@ -312,7 +316,7 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
                     
       {(loading || getSubRoleData.isLoading || getSubRoleData.isFetching || getClientUsersData.isLoading || getClientUsersData.isFetching) && <LoaderScreen />}
 
-      <div className="">
+      <div className="!hidden">
             <BillComponent billData={billData} />
         </div>
     </>

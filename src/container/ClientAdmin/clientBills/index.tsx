@@ -50,9 +50,9 @@ const ClientBills = () => {
   const totalAmount = billsData.reduce((sum: any, bill: any) => sum + (bill?.totalAmount || 0), 0).toFixed(2);
 
 
-  console.log(billsData);
-  console.log(totalAmount);
-  console.log(selectedDate);
+  // console.log(billsData);
+  // console.log(totalAmount);
+  // console.log(selectedDate);
 
   useEffect(() => {
     const fetchDates = async () => {
@@ -152,7 +152,7 @@ const ClientBills = () => {
                           <div className="text-white capitalize"><span className='text-sm'>{isFormatDate(idx?.createdAt)}</span> <span className='text-xs text-white/80'>{isFormatTime(idx?.createdAt)}</span></div>
                         </td>
                         <td className="p-3">
-                          <div className="text-white">₹ {idx?.selectedProducts?.reduce((pSum: any, product: any) => pSum + (product?.price * product?.quantity || 0), 0)}</div>
+                          <div className="text-white">₹ {idx?.selectedProducts?.reduce((pSum: any, product: any) => pSum + (product?.gstWithoutTotal || 0), 0).toFixed(2)}</div>
                         </td>
                         <td className="p-3">
                           <div className="text-white">₹ {idx?.selectedProducts?.reduce((gSum: any, product: any) => gSum + (product?.gstAmount || 0), 0).toFixed(2)}</div>

@@ -3,15 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { getBillPageApi } from "../../api-service/client";
 import { getProfileApi } from "../../api-service/authApi";
 import { useEffect } from "react";
+import LoaderScreen from "../animation/loaderScreen/LoaderScreen";
 
 const BillComponent = ({ billData }: any) => {
-  if (!billData) return null;
 
   console.log(billData);
 
   const getBillPageData = useQuery({
     queryKey : ['getBillPageData'],
-    queryFn: ()=> getBillPageApi(``)
+    queryFn: ()=> getBillPageApi(``),
+    enabled: !!billData, // only run when billData exists
   })
 
   const billPageData = getBillPageData?.data?.data?.result;
@@ -24,51 +25,21 @@ const BillComponent = ({ billData }: any) => {
   const profileData = getProfileData?.data?.data?.result;
 
 //   const totalAmount = billData.reduce((sum: any, bill: any) => sum + (bill?.totalAmount || 0), 0).toFixed(2);
-const totalPrice = billData.selectedProducts.reduce(
+const totalPrice = billData?.selectedProducts.reduce(
     (sum:any, product:any) => sum + ((product?.productAddedFromStock === 'yes' ? product?.actualPrice : product.price) * product.quantity || 0),
     0
-  );
+  ).toLocaleString('en-IN');
   
-  const totalGst = billData.selectedProducts
+  const totalGst = billData?.selectedProducts
     .reduce((sum:any, product:any) => sum + (product.gstAmount || 0), 0)
-    .toFixed(2);
+    .toFixed(2).toLocaleString('en-IN');
   
-  console.log("Total Price:", totalPrice); // Expected: 82.1
-  console.log("Total GST:", totalGst);     // Expected: 2.10
-
-//   useEffect(() => {
-//     if (billData) {
-//       setTimeout(() => {
-//         const printContent = document.getElementById("printArea")?.outerHTML;
-//         const printWindow = window.open("", "", "width=800,height=600");
-
-//         if (printWindow && printContent) {
-//             printWindow.document.write(`
-//                 <html>
-//                     <head>
-//                         <title>Invoice</title>
-//                         <style>
-//                             /* Add any necessary styles here */
-//                             body { font-family: Arial, sans-serif; padding: 20px; }
-//                             table { width: 100%; border-collapse: collapse; }
-//                             th, td { border: 1px solid black; padding: 8px; text-align: left; }
-//                             th { background-color: #f2f2f2; }
-//                         </style>
-//                     </head>
-//                     <body>${printContent}</body>
-//                 </html>
-//             `);
-//             printWindow.document.close();
-//             printWindow.print();
-//             printWindow.close();
-//         }
-//       }, 500);
-//     }
-// }, [billData]);
+  // console.log("Total Price:", totalPrice); // Expected: 82.1
+  // console.log("Total GST:", totalGst);     // Expected: 2.10
 
   
   useEffect(() => {
-    if (billData) {
+    if (billPageData) {
       setTimeout(() => {
         const printContent = document.getElementById("printArea");
         if (printContent) {
@@ -80,18 +51,19 @@ const totalPrice = billData.selectedProducts.reduce(
         }
       }, 500);
     }
-  }, [billData]);
+  }, [billPageData]);
   
 
   return (
-    <div id="printArea" className={`h-full p-4 border rounded-md shadow-md bg-white font-OpenSans  ${billPageData?.printSize}`}>
-    <div className="flex items-center justify-between gap-3">
-            <p className="text-xl font-bold text-center">Invoice</p>
+<>
+<div id="printArea" className={`h-full p-4 border rounded-md shadow-md bg-white font-OpenSans  ${billPageData?.printSize}`}>
+    <div className="grid grid-cols-3 gap-3">
+            <p className="text-xl font-bold ">Invoice</p>
             {billPageData?.invoiceFields?.showInvoiceNo ? (
-              <p className="text-sm">Bill No: <span className="text-base font-semibold">{billData?.billNo}</span></p>
+              <p className="text-sm text-center">Bill No: <span className="text-base font-semibold">{billData?.billNo}</span></p>
             ) : (<p></p>)}
 
-            <p className="text-sm">Date & Time: <span className="font-medium">{isFormatDate(billData?.dateTime)}</span><span className="text-xs ms-1">{isFormatTime(billData?.dateTime)}</span></p>
+            <p className="text-[12px] text-end">Date & Time: <span className="font-medium">{isFormatDate(billData?.dateTime)}</span><span className="text-[10px] ms-1">{isFormatTime(billData?.dateTime)}</span></p>
           </div>
 
           <div className="flex flex-col items-center justify-center gap-1 mt-3">
@@ -107,7 +79,7 @@ const totalPrice = billData.selectedProducts.reduce(
               <p className="max-w-md mt-4 text-2xl font-bold text-center font-Poppins">{billPageData?.header?.businessName}</p>
             )}
             {billPageData?.header?.address && (
-              <p className="flex flex-wrap w-full !max-w-md mt-2 font-medium text-center font-Poppins">{billPageData?.header?.address}</p>
+              <p className="flex flex-wrap w-full !max-w-md mt-2 font-medium text-center font-Poppins justify-center">{billPageData?.header?.address}</p>
             )}
           </div>
 
@@ -158,9 +130,9 @@ const totalPrice = billData.selectedProducts.reduce(
               <tr >
                 <td className="p-2 border">{index+ 1}</td>
                 <td className="p-2 border">{item?.name}</td>
-                <td className="p-2 border">₹ {item?.productAddedFromStock === 'yes' ? item?.actualPrice : item?.price}</td>
+                <td className="p-2 border">₹ {(item?.productAddedFromStock === 'yes' ? item?.actualPrice : item?.price).toLocaleString('en-IN')}</td>
                 <td className="p-2 border">{item?.quantity}</td>
-                <td className="p-2 border">₹ {(item?.productAddedFromStock === 'yes' ? item?.actualPrice : item?.price) * item?.quantity}</td>
+                <td className="p-2 border">₹ {((item?.productAddedFromStock === 'yes' ? item?.actualPrice : item?.price) * item?.quantity).toLocaleString('en-IN')}</td>
               </tr>
                ))} 
             </tbody>
@@ -180,7 +152,7 @@ const totalPrice = billData.selectedProducts.reduce(
               )}
               <tr className="">
                 <td className="p-2 text-sm font-semibold border" colSpan={4}>Total</td>
-                <td className="p-2 text-sm font-bold border" colSpan={1}>₹ {billData?.totalAmount}</td>
+                <td className="p-2 text-sm font-bold border" colSpan={1}>₹ {Number(billData?.totalAmount).toLocaleString('en-IN')}</td>
               </tr>
             </tfoot>
 
@@ -199,6 +171,9 @@ const totalPrice = billData.selectedProducts.reduce(
           </div>
           <p className="mt-2 text-[11px] text-center">Billing Partner CORPWINGS IT SERVICE , 6380341944</p>
     </div>
+
+    {( getBillPageData?.isLoading || getBillPageData?.isFetching || getProfileData.isLoading) && <LoaderScreen/>}
+</>
   );
 };
 

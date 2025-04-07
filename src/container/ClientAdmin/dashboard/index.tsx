@@ -110,17 +110,17 @@ const ClientAdminDashboard = () => {
 
     const handleToggleButton = async (title: any, data: any) => {
         try {
+            setLoading(true)
+            
             let payload;
 
             if (title === 'gstToggle') {
                 payload = { overAllGstToggle: data }
             } else if (title === 'customerToggle') {
                 payload = { customerToggle: data }
-            } else {
+            } else if(title === 'employeeToggle') {
                 payload = { employeeToggle: data }
             }
-
-            setLoading(true)
 
             const postApi = await putClientProfileApi(payload, profileData?._id)
             if (postApi?.status === 200) {
@@ -133,14 +133,26 @@ const ClientAdminDashboard = () => {
             setLoading(false)
         }
     }
-    
-    const totalAmount = useMemo(() => {
-        return selectedProducts.reduce((sum, product) => {
-            const productTotal = profileData?.overAllGstToggle === 'on'
-                ? ((product?.productAddedFromStock === 'yes' ? product?.actualPrice :product.price) + product.gstAmount) * product.quantitySelected // Include GST
-                : (product?.productAddedFromStock === 'yes' ? product?.actualPrice :product.price) * product.quantitySelected; // Exclude GST
 
-            return sum + productTotal;
+    // const totalAmount = useMemo(() => {
+    //     return selectedProducts?.reduce((sum, product) => {
+    //         const productTotal = profileData?.overAllGstToggle === 'on'
+    //             ? (product?.total + product?.gstAmount) * product.quantitySelected // Include GST
+    //             : product?.total * product?.quantitySelected; // Exclude GST
+
+    //         return sum + productTotal;
+    //     }, 0).toFixed(2);
+    // }, [selectedProducts, profileData?.overAllGstToggle]);
+
+    const totalAmount = useMemo(() => {
+        if (!selectedProducts || selectedProducts.length === 0) return '0.00';
+
+        return selectedProducts.reduce((sum, product) => {
+            const unitPrice = product?.productAddedFromStock === 'yes' ? product?.actualPrice : product?.price;
+            const gstPerUnit = profileData?.overAllGstToggle === 'on' ? product?.gstAmount : 0;
+
+            const totalPerItem = (unitPrice + gstPerUnit) * product?.quantitySelected;
+            return sum + totalPerItem;
         }, 0).toFixed(2);
     }, [selectedProducts, profileData?.overAllGstToggle]);
 
@@ -168,7 +180,8 @@ const ClientAdminDashboard = () => {
                         actualPrice: idx?.actualPrice,
                         profitMargin: idx?.profitMargin,
                         gstAmount: totalGstAmount,  // Store total GST per product
-                        total: profileData?.overAllGstToggle === 'on'
+                        gstWithoutTotal: (idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx.price) * idx.quantitySelected,
+                        gstWithTotal: profileData?.overAllGstToggle === 'on'
                             ? ((idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx.price) + idx.gstAmount) * idx.quantitySelected
                             : (idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx.price) * idx.quantitySelected,
                         productAddedFromStock: idx?.productAddedFromStock
@@ -182,15 +195,15 @@ const ClientAdminDashboard = () => {
                 toast.success(postApi?.data?.msg)
                 console.log(postApi);
                 console.log(postApi?.data);
-                
-                  // Store the bill data in state
-             setBillData({
-                billNo: postApi?.data?.result?.billNo || "N/A",
-                dateTime: postApi?.data?.result?.createdAt,
-                totalAmount: payload.totalAmount,
-                selectedProducts: payload.selectedProducts
-            });
-            
+
+                // Store the bill data in state
+                setBillData({
+                    billNo: postApi?.data?.result?.billNo || "N/A",
+                    dateTime: postApi?.data?.result?.createdAt,
+                    totalAmount: payload.totalAmount,
+                    selectedProducts: payload.selectedProducts
+                });
+
                 setSelectedProducts([])
             }
 
@@ -201,7 +214,7 @@ const ClientAdminDashboard = () => {
         }
     };
 
-    
+
 
     return (
         <>
@@ -217,18 +230,18 @@ const ClientAdminDashboard = () => {
                     />
 
                     <div className="flex flex-wrap items-center gap-3 ">
-                            <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor cursor-pointer hover:bg-primaryColor hover:text-black"
-                                onClick={() => navigate('/profile')}>
-                                <div className="flex items-center">
-                                    <HiOutlineDocumentCurrencyRupee size={30} />
-                                    <p>GST %</p>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <span className="">:</span>
-                                    <span className="text-lg font-bold">{profileData?.gstPercentage}</span>
-                                </div>
+                        <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor cursor-pointer hover:bg-primaryColor hover:text-black"
+                            onClick={() => navigate('/profile')}>
+                            <div className="flex items-center">
+                                <HiOutlineDocumentCurrencyRupee size={30} />
+                                <p>GST %</p>
                             </div>
-                            {/* {profileData?.gstPercentage ? (
+                            <div className="flex items-center gap-1">
+                                <span className="">:</span>
+                                <span className="text-lg font-bold">{profileData?.gstPercentage}</span>
+                            </div>
+                        </div>
+                        {/* {profileData?.gstPercentage ? (
                                 <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
                                     <div className="flex items-center">
                                         <HiOutlineDocumentCurrencyRupee size={30} />
@@ -262,39 +275,39 @@ const ClientAdminDashboard = () => {
                                     )}
                                 </div>)} */}
 
-                            {profileData?.overAllGstToggle === 'on' ? (
-                                <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
-                                    <span>GST</span>
-                                    <FaToggleOn size={30} onClick={() => handleToggleButton('gstToggle', 'off',)} className="cursor-pointer" />
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
-                                    <span>GST</span>
-                                    <FaToggleOff size={30} onClick={() => handleToggleButton('gstToggle', 'on')} className="cursor-pointer" />
-                                </div>
-                            )}
-                            {profileData?.customerToggle === 'on' ? (
-                                <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
-                                    <span>Customer</span>
-                                    <FaToggleOn size={30} onClick={() => handleToggleButton('customerToggle', 'off')} className="cursor-pointer" />
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
-                                    <span>Customer</span>
-                                    <FaToggleOff size={30} onClick={() => handleToggleButton('customerToggle', 'on')} className="cursor-pointer" />
-                                </div>
-                            )}
-                            {profileData?.employeeToggle === 'on' ? (
-                                <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
-                                    <span>Employee</span>
-                                    <FaToggleOn size={30} onClick={() => handleToggleButton('employeeToggle', 'off')} className="cursor-pointer" />
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
-                                    <span>Employee</span>
-                                    <FaToggleOff size={30} onClick={() => handleToggleButton('employeeToggle', 'on')} className="cursor-pointer" />
-                                </div>
-                            )}
+                        {profileData?.overAllGstToggle === 'on' ? (
+                            <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
+                                <span>GST</span>
+                                <FaToggleOn size={30} onClick={() => handleToggleButton('gstToggle', 'off',)} className="cursor-pointer" />
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
+                                <span>GST</span>
+                                <FaToggleOff size={30} onClick={() => handleToggleButton('gstToggle', 'on')} className="cursor-pointer" />
+                            </div>
+                        )}
+                        {profileData?.customerToggle === 'on' ? (
+                            <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
+                                <span>Customer</span>
+                                <FaToggleOn size={30} onClick={() => handleToggleButton('customerToggle', 'off')} className="cursor-pointer" />
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
+                                <span>Customer</span>
+                                <FaToggleOff size={30} onClick={() => handleToggleButton('customerToggle', 'on')} className="cursor-pointer" />
+                            </div>
+                        )}
+                        {profileData?.employeeToggle === 'on' ? (
+                            <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
+                                <span>Employee</span>
+                                <FaToggleOn size={30} onClick={() => handleToggleButton('employeeToggle', 'off')} className="cursor-pointer" />
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor">
+                                <span>Employee</span>
+                                <FaToggleOff size={30} onClick={() => handleToggleButton('employeeToggle', 'on')} className="cursor-pointer" />
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -308,7 +321,7 @@ const ClientAdminDashboard = () => {
                                 <div
                                     key={index}
                                     className="gap-6 p-3 transition duration-300 border shadow-xl rounded-3xl bg-white/10 border-white/20 backdrop-blur-md hover:shadow-2xl hover:backdrop-blur-lg h-fit"
-                                    // className="p-3 rounded-3xl bg-gradient-to-tr from-[#222830] to-white/10 backdrop-blur-md  !h-fit w-full"
+                                // className="p-3 rounded-3xl bg-gradient-to-tr from-[#222830] to-white/10 backdrop-blur-md  !h-fit w-full"
                                 >
                                     {/* Header */}
                                     <div className="flex items-center justify-between gap-6">
@@ -356,7 +369,7 @@ const ClientAdminDashboard = () => {
                                                     {filteredItems.map((item: any, i: number) => (
                                                         <div
                                                             key={i}
-                                                            
+
                                                             className="bg-gradient-to-b from-[#222830] to-[222830] backdrop-blur-3xl rounded-3xl p-3 border-[1px] flex justify-between items-center"
                                                         >
                                                             <div
@@ -369,34 +382,34 @@ const ClientAdminDashboard = () => {
                                                                     alt=""
                                                                 />
                                                                 <div>
-                                                                   <div className="flex flex-wrap items-center gap-[6px]">
-                                                                   <p className="text-sm font-semibold text-white capitalize">
-                                                                        {item?.name?.length > 14 ? item?.name.slice(0, 14) + ".." : item?.name}
-                                                                    </p>
+                                                                    <div className="flex flex-wrap items-center gap-[6px]">
+                                                                        <p className="text-sm font-semibold text-white capitalize">
+                                                                            {item?.name?.length > 14 ? item?.name.slice(0, 14) + ".." : item?.name}
+                                                                        </p>
+                                                                        {item?.productAddedFromStock === 'yes' && (
+                                                                            <p className="text-sm font-semibold text-white capitalize">({item?.quantity})</p>
+                                                                        )}
+                                                                    </div>
                                                                     {item?.productAddedFromStock === 'yes' && (
-                                                                        <p className="text-sm font-semibold text-white capitalize">({item?.quantity})</p>
-                                                                    )}
-                                                                   </div>
-                                                                   {item?.productAddedFromStock === 'yes' && (
                                                                         <div className="flex flex-wrap gap-1 mt-2">
                                                                             <div className="flex items-center gap-1 px-2 py-1 border rounded-full border-white/50 w-fit">
-                                                                            <div className="flex text-xs text-white/70">
-                                                                                <p>Stock</p>
-                                                                                <p>:</p>
+                                                                                <div className="flex text-xs text-white/70">
+                                                                                    <p>Stock</p>
+                                                                                    <p>:</p>
+                                                                                </div>
+                                                                                <p className="text-white flex gap-[2px] text-xs">
+                                                                                    {item?.count}
+                                                                                </p>
                                                                             </div>
-                                                                            <p className="text-white flex gap-[2px] text-xs">
-                                                                                {item?.count}
-                                                                            </p>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-1 px-2 py-1 border rounded-full border-white/50 w-fit">
-                                                                            <div className="flex text-xs text-white/70">
-                                                                                <p>Sales</p>
-                                                                                <p>:</p>
+                                                                            <div className="flex items-center gap-1 px-2 py-1 border rounded-full border-white/50 w-fit">
+                                                                                <div className="flex text-xs text-white/70">
+                                                                                    <p>Sales</p>
+                                                                                    <p>:</p>
+                                                                                </div>
+                                                                                <p className="text-white flex gap-[2px] text-xs">
+                                                                                    {item?.sales}
+                                                                                </p>
                                                                             </div>
-                                                                            <p className="text-white flex gap-[2px] text-xs">
-                                                                                {item?.sales}
-                                                                            </p>
-                                                                        </div>
                                                                         </div>
                                                                     )}
                                                                     <div className="flex flex-col md:flex-row flex-wrap gap-2 mt-[6px] md:gap-[6px]">
@@ -492,12 +505,12 @@ const ClientAdminDashboard = () => {
                                                 <div className="w-full">
                                                     <div className="flex items-center justify-between w-full">
                                                         <div className="flex items-center gap-1">
-                                                        <p className="text-sm font-bold text-white">
-                                                            {product?.name?.length > 14 ? product?.name.slice(0, 14) + ".." : product?.name}
-                                                        </p>
-                                                        {product?.productAddedFromStock === 'yes' && (
-                                                            <p className="text-sm font-medium text-white">({product?.quantity})</p>
-                                                        )}
+                                                            <p className="text-sm font-bold text-white">
+                                                                {product?.name?.length > 14 ? product?.name.slice(0, 14) + ".." : product?.name}
+                                                            </p>
+                                                            {product?.productAddedFromStock === 'yes' && (
+                                                                <p className="text-sm font-medium text-white">({product?.quantity})</p>
+                                                            )}
                                                         </div>
                                                         <button
                                                             onClick={() => handleRemoveClick(product?._id)}
@@ -584,20 +597,20 @@ const ClientAdminDashboard = () => {
                                         </div>
                                         {(profileData?.customerToggle === 'on' || profileData?.employeeToggle === 'on') ? (
                                             <div className="flex flex-col">
-                                            <button
-                                            disabled={profileData?.billPageDetails === 'no'}
-                                                type="button" onClick={() => { setOpenModal(true) }}
-                                                className="px-3 py-2 font-semibold bg-primaryColor rounded-3xl ">Submit</button>
-                                                {profileData?.billPageDetails === 'no' && <p onClick={()=>navigate('/billPage')} className="flex items-center gap-1 mt-1 text-xs hover:cursor-pointer"><span className="text-lg text-red-500">*</span> BillPage is Not Added, Kindly Add It.</p>}
+                                                <button
+                                                    disabled={profileData?.billPageDetails === 'no'}
+                                                    type="button" onClick={() => { setOpenModal(true) }}
+                                                    className="px-3 py-2 font-semibold bg-primaryColor rounded-3xl ">Submit</button>
+                                                {profileData?.billPageDetails === 'no' && <p onClick={() => navigate('/billPage')} className="flex items-center gap-1 mt-1 text-xs hover:cursor-pointer"><span className="text-lg text-red-500">*</span> BillPage is Not Added, Kindly Add It.</p>}
                                             </div>
-                                            
+
                                         ) : (
                                             <div className="flex flex-col">
-                                            <button
-                                            disabled={profileData?.billPageDetails === 'no'}
-                                                type="button" onClick={() => handleCreateBill()}
-                                                className="px-3 py-2 font-semibold bg-primaryColor rounded-3xl ">Create Bill & Print</button>
-                                            {profileData?.billPageDetails === 'no' && <p onClick={()=>navigate('/billPage')} className="flex items-center gap-1 mt-1 text-xs hover:cursor-pointer"><span className="text-lg text-red-500">*</span> BillPage is Not Added, Kindly Add It.</p>}                                                </div>
+                                                <button
+                                                    disabled={profileData?.billPageDetails === 'no'}
+                                                    type="button" onClick={() => handleCreateBill()}
+                                                    className="px-3 py-2 font-semibold bg-primaryColor rounded-3xl ">Create Bill & Print</button>
+                                                {profileData?.billPageDetails === 'no' && <p onClick={() => navigate('/billPage')} className="flex items-center gap-1 mt-1 text-xs hover:cursor-pointer"><span className="text-lg text-red-500">*</span> BillPage is Not Added, Kindly Add It.</p>}                                                </div>
                                         )}
                                     </div>
                                 </div>
@@ -616,9 +629,9 @@ const ClientAdminDashboard = () => {
             {openModal && <CreateBillModal openModal={openModal} handleClose={() => setOpenModal(!openModal)} totalAmount={totalAmount}
                 selectedProducts={selectedProducts} clearSelectedProducts={() => setSelectedProducts([])} />}
 
-                <div className="">
-                        <BillComponent billData={billData} />
-                    </div>
+            <div className="!hidden">
+                <BillComponent billData={billData} />
+            </div>
         </>
     );
 };
