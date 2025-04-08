@@ -5,11 +5,14 @@ import { isFormatDate, isFormatTime } from '../../../utils/helper'
 import { FaEye } from 'react-icons/fa6'
 import NoDataFound from '../../../components/noDataFound'
 import LoaderScreen from '../../../components/animation/loaderScreen/LoaderScreen'
-import DatePickerWithHighlights from './billCustomCalendar/ReactCustomCalendar'
+import DatePickerWithHighlights from './stockCustomCalendar/ReactCustomCalendar'
+import BillSingleView from './BillSingleView'
 
 const ClientBills = () => {
 
   const [search, setSearch] = useState('')
+  const [openModal , setOpenModal] = useState(false)
+  const [modalId , setModalId] = useState('')
   const getCurrentDate = () => new Date().toISOString().split('T')[0]; // Function to get today's date
   const [highlightDates, setHighlightDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(getCurrentDate());
@@ -164,7 +167,7 @@ const ClientBills = () => {
                         <td className="flex gap-2 p-3">
                           <button
                             className="flex items-center justify-center w-8 h-8 border rounded-md bg-white/10 border-primaryColor text-primaryColor hover:bg-primaryColor hover:text-black"
-                          // onClick={() => { setOpenSubRoleModal(true), setOpenSubRoleModalId(idx?._id) }}
+                          onClick={() => { setOpenModal(true), setModalId(idx?._id) }}
                           >
                             <FaEye className="" />
                           </button>
@@ -192,6 +195,8 @@ const ClientBills = () => {
       </div>
 
       {(getBillsData.isLoading || getBillsData.isFetching) && <LoaderScreen />}
+
+      {openModal && <BillSingleView openModal={openModal} handleClose={()=>setOpenModal(!openModal)} modalId={modalId}/>}
     </>
   )
 }
