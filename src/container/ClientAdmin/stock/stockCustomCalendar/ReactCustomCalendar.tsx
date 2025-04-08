@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { GrPowerReset } from 'react-icons/gr'; // 🌀 Make sure to install react-icons
 
@@ -13,8 +13,9 @@ export interface StockDates {
 interface DatePickerWithHighlightsProps {
   stockEntry: 'products' | 'purchase';
   stockDates: StockDates;
-  selectedDate?: string;
+  selectedDate?: string | null;
   onDateChange?: (date: string) => void;
+  showAllOption?: boolean; // ✅ Add this line
 }
 
 const getCurrentDate = () => format(new Date(), 'yyyy-MM-dd');
@@ -25,7 +26,9 @@ const DatePickerWithHighlights: React.FC<DatePickerWithHighlightsProps> = ({
   selectedDate: initialSelectedDate = getCurrentDate(),
   onDateChange,
 }) => {
-  const [selectedDate, setSelectedDate] = useState<string>(initialSelectedDate);
+  const [selectedDate, setSelectedDate] = useState<string>(
+    initialSelectedDate ?? getCurrentDate()
+  );
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
@@ -69,11 +72,16 @@ const DatePickerWithHighlights: React.FC<DatePickerWithHighlightsProps> = ({
 
   const today = new Date(); // Used for disabling future dates
 
+
+
   return (
     <div className="relative w-fit">
       {/* 📅 Selected Date + Icon + Reset */}
       <div className="flex items-center gap-2 px-3 py-2 border rounded-md border-white/30 bg-white/10">
-        <span className="text-white">{format(selectedDateObj, 'dd-MM-yyyy')}</span>
+        <span className="text-white">{selectedDate && isValid(new Date(selectedDate))
+          ? format(new Date(selectedDate), "yyyy-MM-dd")
+          : ""
+        }</span>
 
         <CalendarIcon
           className="w-5 h-5 text-white cursor-pointer"

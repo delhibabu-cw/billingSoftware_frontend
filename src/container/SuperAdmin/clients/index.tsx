@@ -11,6 +11,8 @@ import ClientsCreateModal from "./ClientsCreateModal"
 import Pagination from "../../../components/pagination"
 import { MdDelete } from "react-icons/md";
 import toast from "react-hot-toast"
+import ClientsSingleViewModal from "./ClientsSingleViewModal"
+import { FaEdit } from "react-icons/fa"
 
 
 const SuperAdminClients = () => {
@@ -24,6 +26,8 @@ const SuperAdminClients = () => {
     const options = ["5", "7", "10", "20"]; // Add as many as you need
     const [openModal, setOpenModal] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [openSingleView , setOpenSingleView] = useState(false)
+    const [singleViewId , setSingleViewId] = useState('')
 
     // const getRoleData = useQuery({
     //     queryKey: ['getRoleData'],
@@ -122,7 +126,7 @@ const SuperAdminClients = () => {
                                             />
                                         </div> */}
                             <button
-                                onClick={() => setOpenModal(true)}
+                                onClick={() => {setOpenModal(true),setSingleViewId("")}}
                                 className="px-3 py-2 flex  justify-center items-center gap-1 border-[1.5px] rounded-md bg-primaryColor hover:bg-white/20 hover:text-primaryColor border-[#f1f6fd61] hover:border-primaryColor">
                                 <IoMdAdd />Create
                             </button>
@@ -167,9 +171,10 @@ const SuperAdminClients = () => {
                                     <tr className="">
                                         <td className="p-3 font-medium font-Montserrat ">S.NO</td>
                                         <td className="p-3 font-medium capitalize font-Montserrat">Client ID</td>
-                                        <td className="p-3 font-medium capitalize font-Montserrat">Name</td>
-                                        <td className="p-3 font-medium capitalize font-Montserrat">Email ID</td>
-                                        <td className="p-3 font-medium capitalize font-Montserrat">Mobile Number</td>
+                                        <td className="p-3 font-medium capitalize font-Montserrat">Client Name</td>
+                                        <td className="p-3 font-medium capitalize font-Montserrat">Brand Name</td>
+                                        <td className="p-3 font-medium capitalize font-Montserrat">Location</td>
+                                        <td className="p-3 font-medium capitalize font-Montserrat">Validity</td>
                                         <td className="p-3 font-medium capitalize font-Montserrat">Status</td>
                                         <td className="p-3 font-medium capitalize font-Montserrat">Action</td>
                                     </tr>
@@ -182,14 +187,19 @@ const SuperAdminClients = () => {
                                             <td className="p-3">
                                                 <p className="font-semibold text-white">{idx?.unquieId ? idx?.unquieId : "-"}</p>
                                             </td>
-                                            <td className="p-3 max-w-40 2xl:max-w-44">
+                                            <td className="flex flex-wrap p-3 max-w-40 2xl:max-w-44">
                                                 <div className="text-white ">{idx?.fullName ? idx?.fullName : "-"}</div>
                                             </td>
-                                            <td className="p-3">
-                                                <div className="text-white ">{idx?.email ? idx?.email : "-"}</div>
+                                            
+                                          
+                                            <td className="p-3 ">
+                                                <div className="text-white ">{idx?.brandName ? idx?.brandName : "-"}</div>
                                             </td>
                                             <td className="p-3">
-                                                <div className="text-white ">{idx?.mobile ? idx?.mobile : "-"}</div>
+                                                <div className="text-white ">{idx?.location ? idx?.location : "-"}</div>
+                                            </td>
+                                            <td className="p-3">
+                                                <div className="text-white ">{idx?.validityLeft ? <span>{idx?.validityLeft} <span className="text-sm">Days</span></span> : "-"}</div>
                                             </td>
                                             <td className="p-3">
                                                 <p className="font-medium capitalize text-primaryColor">{idx?.status}</p>
@@ -197,9 +207,15 @@ const SuperAdminClients = () => {
                                             <td className="flex gap-3 p-3">
                                                 <button
                                                     className="flex items-center justify-center w-8 h-8 bg-white text-[#333333] rounded-md hover:bg-primaryColor hover:text-black"
-                                                // onClick={() => { setOpenModal(true), setOpenModalId(idx?._id) }}
+                                                onClick={() => { setOpenSingleView(true), setSingleViewId(idx?._id) }}
                                                 >
                                                     <FaEye className="" />
+                                                </button>
+                                                <button
+                                                    className="flex items-center justify-center w-8 h-8 bg-white text-[#333333] rounded-md hover:bg-primaryColor hover:text-black"
+                                                onClick={() => { setOpenModal(true), setSingleViewId(idx?._id) }}
+                                                >
+                                                    <FaEdit className="" />
                                                 </button>
                                                 <button
                                                     className="flex items-center justify-center w-8 h-8 bg-white text-[#333333] rounded-md hover:bg-primaryColor hover:text-black"
@@ -295,7 +311,10 @@ const SuperAdminClients = () => {
             {(loading || getClientData?.isLoading || getClientData?.isFetching) && <LoaderScreen />}
 
             {openModal && <ClientsCreateModal openModal={openModal} handleClose={() => setOpenModal(!openModal)}
-                refetch={() => getClientData?.refetch()} />}
+                refetch={() => getClientData?.refetch()} modalId={singleViewId}/>}
+
+                {openSingleView && <ClientsSingleViewModal openModal={openSingleView} handleClose={()=>setOpenSingleView(!openSingleView)}
+                    modalId={singleViewId}/>}
         </>
     )
 }

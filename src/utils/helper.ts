@@ -1,4 +1,5 @@
 import { FieldError, FieldErrorsImpl, Merge } from "react-hook-form";
+import CryptoJS from "crypto-js";
 
 const getUserRole = () => {
     const roleValue = localStorage.getItem('role');
@@ -142,7 +143,30 @@ export const numberToWords = (num: number): string => {
 
 
 
+const SECRET_KEY = CryptoJS.enc.Hex.parse(import.meta.env.VITE_DECRYPT_SECRET_KEY || '');
 
+export const decryptPassword = (encryptedPassword: string, iv: string): string => {
+  try {
+    if (!encryptedPassword || !iv || !SECRET_KEY) return '';
+
+    const decrypted = CryptoJS.AES.decrypt(
+      {
+        ciphertext: CryptoJS.enc.Hex.parse(encryptedPassword),
+      } as any,
+      SECRET_KEY,
+      {
+        iv: CryptoJS.enc.Hex.parse(iv),
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      }
+    );
+
+    return decrypted.toString(CryptoJS.enc.Utf8);
+  } catch (error) {
+    console.error('Decryption failed:', error);
+    return '';
+  }
+};
 
 
 

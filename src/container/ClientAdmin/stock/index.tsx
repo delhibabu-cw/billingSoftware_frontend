@@ -20,7 +20,7 @@ const ClientStock = () => {
   const [stockType, setStockType] = useState('')
   const [purchaseModalId, setPurchaseModalId] = useState('')
   const getCurrentDate = () => new Date().toISOString().split('T')[0];
-  const [selectedDate, setSelectedDate] = useState<string>(getCurrentDate());
+  const [selectedDate, setSelectedDate] = useState<string | null>(stockEntry === 'products' ? "" : getCurrentDate());
 
   const [stockDates, setStockDates] = useState<{
     products: string[];
@@ -32,7 +32,7 @@ const ClientStock = () => {
 
   const getStockData = useQuery({
     queryKey: ['getStockData', search, selectedDate, stockEntry],
-    queryFn: () => getStockApi(`?search=${search}&date=${selectedDate}&stockCategory=${stockEntry}`)
+    queryFn: () => getStockApi(`?search=${search}&date=${selectedDate ? selectedDate : ''}&stockCategory=${stockEntry}`)
   })
 
   const stockData = getStockData?.data?.data?.result
@@ -76,16 +76,14 @@ const ClientStock = () => {
   }, []);
 
 
-  // ✅ Determine if selected date is in the current stockEntry type
-  const highlightDates: string[] = stockEntry === 'products'
-    ? stockDates.products
-    : stockDates.purchase;
 
-  const isHighlighted = highlightDates.includes(selectedDate);
-
-  console.log(stockDates);
-  console.log(isHighlighted);
-
+  useEffect(() => {
+    if (stockEntry === 'products') {
+      setSelectedDate("");
+    } else if (stockEntry === 'purchase') {
+      setSelectedDate(getCurrentDate());
+    }
+  }, []);
 
   return (
     <>
@@ -96,10 +94,10 @@ const ClientStock = () => {
           <div className="flex justify-between">
             <div className="flex flex-wrap gap-4 mb-6">
               <button
-                onClick={() => setStockEntry('products')}
+                onClick={() => { setStockEntry('products'); setSelectedDate(null); }}
                 className={`px-3 py-1 border rounded-3xl flex gap-2 ${stockEntry === 'products' ? "bg-primaryColor border-primaryColor" : "border-primaryColor text-primaryColor hover:bg-primaryColor hover:text-black"}`}> <span>Stock Products</span></button>
               <button
-                onClick={() => setStockEntry('purchase')}
+                onClick={() => { setStockEntry('purchase'); setSelectedDate(getCurrentDate()); }}
                 className={`px-3 py-1 border rounded-3xl flex gap-2 ${stockEntry === 'purchase' ? "bg-primaryColor border-primaryColor" : "border-primaryColor text-primaryColor hover:bg-primaryColor hover:text-black"}`}> <span>Purchase</span></button>
             </div>
             <button
@@ -109,7 +107,7 @@ const ClientStock = () => {
             </button>
           </div>
           <div className="flex flex-wrap items-center justify-between w-full gap-3 md:flex-nowrap">
-          <input
+            <input
               type="search"
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search BillNo Here..."
@@ -117,15 +115,22 @@ const ClientStock = () => {
             />
 
             <div className="flex flex-wrap items-center gap-3">
-            <DatePickerWithHighlights
-              stockEntry={stockEntry}
-              stockDates={stockDates}
-              selectedDate={selectedDate}
-              onDateChange={(date: any) => {
-                setSelectedDate(date)
-                console.log('Selected:', date);
-              }}
-            />
+              {stockEntry === 'products' && (
+                <button
+                  onClick={() => setSelectedDate("")}
+                  className={`px-3 py-1 text-sm border rounded-md ${selectedDate === "" ? "bg-primaryColor text-black" : "text-primaryColor hover:bg-white/10"}`}>
+                  Show All
+                </button>
+              )}
+              <DatePickerWithHighlights
+                stockEntry={stockEntry}
+                stockDates={stockDates}
+                selectedDate={selectedDate ?? undefined}
+                onDateChange={(date: string | null) => {
+                  if (date) setSelectedDate(date);
+                }}
+                showAllOption={stockEntry === 'products'} // ✅ Now recognized properly
+              />
             </div>
           </div>
           <div>

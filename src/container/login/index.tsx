@@ -99,7 +99,7 @@ const Login = () => {
         localStorage.setItem('name', updateApi?.data?.result?.user?.fullName);
         
       if(updateApi?.data?.result.user.role.name === 'SUPERADMIN'){
-        navigate('/dashboard');
+        navigate('/clients');
       }else{
         navigate('/home');
       }

@@ -19,6 +19,10 @@ export const postClientApi = async (payload: any) => {
   return apiFunctions.post(`${siteUrls.admin.client}`, payload);
 };
 
+export const putClientApi = async (payload: any, query : any) => {
+  return apiFunctions.put(`${siteUrls.admin.client}/${query}`, payload);
+};
+
 // post user create
 export const deleteClientApi = async (query: any) => {
   return apiFunctions.delete(`${siteUrls.admin.client}/${query}`);

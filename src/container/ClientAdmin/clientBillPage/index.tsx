@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScreen";
 import { useQuery } from "@tanstack/react-query";
 import { getProfileApi } from "../../../api-service/authApi";
+import { MdAccessTime, MdDateRange } from "react-icons/md";
 
 const ClientBillPage = () => {
 
@@ -191,7 +192,7 @@ const ClientBillPage = () => {
     <>
       <div className="grid grid-cols-12 gap-4 pt-24 lg:pt-32 px-[4%] pb-10">
         {/* Left Side - Print Settings */}
-        <div className="h-full col-span-5 p-4 rounded-md shadow-md bg-white/10">
+        <div className="h-full col-span-12 p-4 rounded-md shadow-md lg:col-span-6 xl:col-span-5 bg-white/10">
           <h2 className="mb-2 text-lg font-bold text-white">Print Settings</h2>
           <form className="grid max-h-screen grid-cols-12 gap-4 overflow-y-auto hide-scrollbar"
           onSubmit={handleSubmit(onSubmit)}>
@@ -458,14 +459,21 @@ const ClientBillPage = () => {
         </div>
 
         {/* Right Side - Invoice Preview */}
-        <div className={`col-span-7 p-4 border rounded-md shadow-md bg-white/95 h-full overflow-y-auto hide-scrollbar`} id="printArea">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xl font-bold text-center">Invoice</p>
+        <div className={`col-span-12 lg:col-span-6 xl:col-span-7 p-2 md:p-4 border rounded-md shadow-md bg-white/95 h-full overflow-y-auto hide-scrollbar`} id="printArea">
+          <div className="grid grid-cols-3 gap-3">
+            <p className="text-xl font-bold ">Invoice</p>
             {watchShowBillNo ? (
-              <p className="text-sm">Bill No: <span className="text-base font-semibold"></span></p>
-            ) : (<p></p>)}
+                                <p className="text-sm text-center">Bill No: <span className="text-base font-semibold"></span></p>
+                              ) : (<p></p>)}
 
-            <p className="text-sm">Date & Time: <span className="text-base font-semibold"></span></p>
+                     <p className="text-[12px] text-end">
+                                                    <span className='flex flex-wrap items-center justify-end gap-1'>
+                                                        <span className='flex flex-wrap items-center justify-center gap-1'><MdDateRange className='text-lg'/></span>
+                                                         <span className='hidden md:block'>|</span>
+                                                         <span className='flex flex-wrap items-center justify-center gap-1'><MdAccessTime className='text-lg'/></span>
+                                                         </span>
+                                                         </p>
+        
           </div>
 
           <div className="flex flex-col items-center justify-center gap-1 mt-3">
@@ -478,10 +486,10 @@ const ClientBillPage = () => {
               />
             )}
             {watchTitle && (
-              <p className="max-w-md mt-4 text-2xl font-bold text-center font-Poppins">{watchTitle}</p>
+              <p className="max-w-md mt-4 text-xl font-bold text-center md:text-2xl font-Poppins">{watchTitle}</p>
             )}
             {watchAddress && (
-              <p className="flex flex-wrap w-full !max-w-md mt-2 font-medium text-center font-Poppins">{watchAddress}</p>
+              <p className="flex flex-wrap w-full !max-w-md mt-2 font-medium text-sm justify-center md:text-base text-center font-Poppins">{watchAddress}</p>
             )}
           </div>
 
@@ -562,12 +570,12 @@ const ClientBillPage = () => {
           <div className="flex items-center justify-between w-full gap-3 mt-3">
             <div>
               {watchTerms && (
-                <p className="flex max-w-sm text-sm font-semibold text-center capitalize">{watchTerms}</p>
+                <p className="flex max-w-sm text-xs font-semibold capitalize md:text-center md:text-sm">{watchTerms}</p>
               )}
             </div>
             <div>
               {watchSignature && (
-                <img src={watchSignature} className="object-cover h-20 border rounded w-36" alt="" />
+                <img src={watchSignature} className="object-cover w-20 border rounded h-14 md:h-20 md:w-36" alt="" />
               )}
             </div>
           </div>

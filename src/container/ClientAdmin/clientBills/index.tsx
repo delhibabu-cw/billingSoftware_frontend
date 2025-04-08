@@ -33,14 +33,14 @@ const ClientBills = () => {
   const totalPrice = billsData.reduce((sum: any, bill: any) =>
     sum + bill?.selectedProducts?.reduce((pSum: any, product: any) => pSum + (product?.price * product?.quantity || 0), 0),
     0
-  );
+  )
 
   const totalGst = billsData
     .reduce((sum: number, bill: any) =>
       sum + bill?.selectedProducts?.reduce((gSum: number, product: any) => gSum + (product?.gstAmount || 0), 0),
       0
     )
-    .toFixed(2); // Ensures only 2 decimal places
+    .toFixed(2) // Ensures only 2 decimal places
 
   // const totalGst = Math.round(
   //   billsData.reduce((sum: number, bill: any) => 
@@ -97,7 +97,7 @@ const ClientBills = () => {
                   <p>Total Amount</p>
                   <p>:</p>
                 </div>
-                <p className='text-lg font-bold font-OpenSans'><span>₹</span> {totalAmount}</p>
+                <p className='text-lg font-bold font-OpenSans'><span>₹</span> {Number(totalAmount).toLocaleString('en-IN')}</p>
               </div>
               <DatePickerWithHighlights
                 selectedDate={selectedDate}
@@ -155,13 +155,13 @@ const ClientBills = () => {
                           <div className="text-white capitalize"><span className='text-sm'>{isFormatDate(idx?.createdAt)}</span> <span className='text-xs text-white/80'>{isFormatTime(idx?.createdAt)}</span></div>
                         </td>
                         <td className="p-3">
-                          <div className="text-white">₹ {idx?.selectedProducts?.reduce((pSum: any, product: any) => pSum + (product?.gstWithoutTotal || 0), 0).toFixed(2)}</div>
+                          <div className="text-white">₹ {Number(idx?.selectedProducts?.reduce((pSum: any, product: any) => pSum + (product?.gstWithoutTotal || 0), 0).toFixed(2)).toLocaleString('en-IN')}</div>
                         </td>
                         <td className="p-3">
                           <div className="text-white">₹ {idx?.selectedProducts?.reduce((gSum: any, product: any) => gSum + (product?.gstAmount || 0), 0).toFixed(2)}</div>
                         </td>
                         <td className="p-3">
-                          <div className="text-white">₹ {idx?.totalAmount}</div>
+                          <div className="text-white">₹ {(idx?.totalAmount).toLocaleString('en-IN')}</div>
                         </td>
 
                         <td className="flex gap-2 p-3">
@@ -181,9 +181,9 @@ const ClientBills = () => {
                   <tfoot>
                     <tr className="border-t bg-white/20 border-white/30">
                       <td className="p-3 text-lg font-bold text-white" colSpan={5}>Total</td>
-                      <td className="p-3 text-lg font-medium text-white">₹ {totalPrice}</td>
-                      <td className="p-3 text-lg font-medium text-white">₹ {totalGst}</td>
-                      <td className="p-3 text-lg font-bold text-white">₹ {totalAmount}</td>
+                      <td className="p-3 text-lg font-medium text-white">₹ {(totalPrice).toLocaleString('en-IN')}</td>
+                      <td className="p-3 text-lg font-medium text-white">₹ {(totalGst).toLocaleString('en-IN')}</td>
+                      <td className="p-3 text-lg font-bold text-white">₹ {Number(totalAmount).toLocaleString('en-IN')}</td>
                       <td className="p-3 text-lg font-bold text-white" colSpan={1}></td>
                     </tr>
                   </tfoot>

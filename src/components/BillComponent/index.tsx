@@ -39,7 +39,7 @@ const totalPrice = billData?.selectedProducts.reduce(
 
   
   useEffect(() => {
-    if (billPageData) {
+    if (billPageData && billData) {
       setTimeout(() => {
         const printContent = document.getElementById("printArea");
         if (printContent) {
@@ -51,7 +51,7 @@ const totalPrice = billData?.selectedProducts.reduce(
         }
       }, 500);
     }
-  }, [billPageData]);
+  }, [billPageData , billData]);
   
 
   return (
