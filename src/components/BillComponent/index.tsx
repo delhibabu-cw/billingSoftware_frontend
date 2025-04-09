@@ -39,46 +39,48 @@ const BillComponent = ({ billData }: any) => {
   // ✅ UseEffect to open printable bill in a new window (better for mobile)
   useEffect(() => {
     if (billPageData && billData) {
-      setTimeout(() => {
-        const printContent = document.getElementById("printArea");
-        if (printContent) {
-          const newWin = window.open("", "_blank");
-          if (newWin) {
-            newWin.document.write(`
-              <html>
-                <head>
-                  <title>Print Bill</title>
-                  <meta charset="utf-8" />
-                  <meta name="viewport" content="width=device-width, initial-scale=1" />
-                  <!-- ✅ Correct Tailwind CDN -->
-                  <script src="https://cdn.tailwindcss.com"></script>
-                  <style>
-                    @page {
-                      margin: 20px;
-                    }
-                    body {
-                      padding: 20px;
-                      background: white;
-                    }
-                  </style>
-                </head>
-                <body>
-                  <div id="app">${printContent.innerHTML}</div>
-                  <script>
-                    window.onload = function() {
+      const printContent = document.getElementById("printArea");
+      if (printContent) {
+        const newWin = window.open("", "_blank");
+  
+        if (newWin) {
+          newWin.document.write(`
+            <html>
+              <head>
+                <title>Print Bill</title>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <script src="https://cdn.tailwindcss.com"></script>
+                <style>
+                  @page {
+                    margin: 20px;
+                  }
+                  body {
+                    padding: 20px;
+                    background: white;
+                  }
+                </style>
+              </head>
+              <body>
+                <div id="app">${printContent.innerHTML}</div>
+                <script>
+                  // Wait for images and other content to load
+                  window.onload = function() {
+                    setTimeout(function () {
                       window.print();
                       setTimeout(() => window.close(), 300);
-                    };
-                  </script>
-                </body>
-              </html>
-            `);
-            newWin.document.close();
-          }
+                    }, 300); // extra delay helps on mobile
+                  };
+                </script>
+              </body>
+            </html>
+          `);
+          newWin.document.close();
         }
-      }, 500);
+      }
     }
   }, [billPageData, billData]);
+  
   
 
 
