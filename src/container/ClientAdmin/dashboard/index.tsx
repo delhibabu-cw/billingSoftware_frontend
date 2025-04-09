@@ -230,28 +230,40 @@ const ClientAdminDashboard = () => {
       };
 
       const handlePrint = (billData: any, billPageData: any) => {
-        const printContent = generatePrintContent(billData, billPageData);
+        const content = generatePrintContent(billData, billPageData);
       
-        const printWindow = window.open('', '_blank');
+        const iframe = document.createElement("iframe");
+        iframe.name = "print-frame";
+        iframe.style.position = "fixed";
+        iframe.style.top = "-10000px";
+        iframe.style.left = "-10000px";
+        iframe.style.width = "0px";
+        iframe.style.height = "0px";
+        iframe.style.visibility = "hidden";
+        document.body.appendChild(iframe);
       
-        if (!printWindow) {
-          alert("Popup blocked! Please allow popups for this site.");
-          return;
+        const iframeWindow = iframe.contentWindow;
+      
+        if (iframeWindow) {
+          iframeWindow.document.open();
+          iframeWindow.document.write(content);
+          iframeWindow.document.close();
+      
+          // ✅ Wait for iframe content to fully load
+          iframe.onload = () => {
+            setTimeout(() => {
+              try {
+                iframeWindow.focus();
+                iframeWindow.print();
+              } catch (e) {
+                console.error("Print failed:", e);
+              }
+              document.body.removeChild(iframe);
+            }, 500); // give extra time for mobile to be ready
+          };
         }
-      
-        printWindow.document.open();
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-      
-        // ✅ Wait until content is fully loaded before printing
-        printWindow.onload = () => {
-          setTimeout(() => {
-            printWindow.focus(); // for Safari
-            printWindow.print();
-            printWindow.close();
-          }, 500); // give mobile some time to render
-        };
       };
+      
       
     //   const handlePrint = (billData: any, billPageData: any) => {
     //     const content = generatePrintContent(billData, billPageData);
