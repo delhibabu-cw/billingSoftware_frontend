@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import logo from "../../assets/images/logo/originalLogo.png"
 import { useEffect, useState } from "react";
 import { Controller, Resolver, SubmitHandler, useForm } from 'react-hook-form';
@@ -127,7 +127,7 @@ const Login = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="">
           <div className="w-full p-4 border shadow-lg md:p-6 md:max-w-md bg-white/10 backdrop-blur-md rounded-2xl border-white/20 hide-scrollbar">
             <img src={logo} className="w-[200px] mx-auto" alt="" />
-            <h2 className="mb-4 text-2xl font-bold text-center text-white uppercase mt-7">Billing Software</h2>
+            <h2 className="mb-4 text-2xl font-extrabold text-center text-white uppercase md:text-3xl mt-7 font-Alice ">Billing Software</h2>
             <div className="grid grid-cols-12 mt-5 gap-y-2 2xl:gap-y-3">
               <div className="col-span-12 xl:col-span-12">
                 <label htmlFor="signin-username" className="form-label text-default text-[#c2c5c9] text-base font-inter">User Name</label>
@@ -209,7 +209,7 @@ const Login = () => {
                       Remember password?
                     </label>
                   </div>
-                  <Link to={`/forgotPassword`} className="ltr:float-right rtl:float-left text-danger text-xs text-[#8c9097] hover:text-primaryColor">Forget password?</Link>
+                  {/* <Link to={`/forgotPassword`} className="ltr:float-right rtl:float-left text-danger text-xs text-[#8c9097] hover:text-primaryColor">Forget password?</Link> */}
                 </div>
               </div>
               {error && <p className="col-span-12 mb-3 font-medium text-primaryColor">{error}</p>}

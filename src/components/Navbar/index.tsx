@@ -227,14 +227,16 @@ function NavbarIndex() {
                       transformOrigin: "top", // Smooth scaling from the top
                     }}
                   >
-                    <div
-                      className="flex items-center gap-2 border-b-[1px] py-1 px-2 hover:bg-primaryColor cursor-pointer font-Poppins"
-                      // onClick={(e) => e.stopPropagation()}
-                      onClick={() => navigate('/profile')}
-                    >
-                      <BiUser />
-                      <p>Profile</p>
-                    </div>
+                    {getProfileData?.data?.data?.result?.role?.name != 'SUPERADMIN' && (
+                       <div
+                       className="flex items-center gap-2 border-b-[1px] py-1 px-2 hover:bg-primaryColor cursor-pointer font-Poppins"
+                       // onClick={(e) => e.stopPropagation()}
+                       onClick={() => navigate('/profile')}
+                     >
+                       <BiUser />
+                       <p>Profile</p>
+                     </div>
+                    )}
                     <div
                       className="flex items-center gap-2 px-2 py-1 cursor-pointer font-Poppins hover:bg-primaryColor"
                       onClick={handleLogout}

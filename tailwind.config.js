@@ -10,6 +10,7 @@ export default {
         Montserrat: ["Montserrat", "sans-serif"],
         OpenSans: ["Open Sans", "sans-serif"],
         Poppins: ["Poppins", "sans-serif"],
+        Alice: ["Alice", "sans-serif"],
       },
       colors: {
         // primaryColor: "#FFFF00",

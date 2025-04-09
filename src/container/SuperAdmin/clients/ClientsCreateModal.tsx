@@ -256,41 +256,42 @@ const ClientsCreateModal = ({ openModal, handleClose, refetch, modalId }: any) =
                                 />
                                 {errors.location && <p className="mt-1 text-xs font-medium text-primaryColor">{getErrorMessage(errors.location)}</p>}
                             </div>
-                            <div className="col-span-12 md:col-span-6">
-                                <p className="mb-1 text-white/80 font-OpenSans">
-                                    Validity <span className="text-primaryColor">*</span>
-                                </p>
+                          {!modalId && (
+                              <div className="col-span-12 md:col-span-6">
+                              <p className="mb-1 text-white/80 font-OpenSans">
+                                  Validity <span className="text-primaryColor">*</span>
+                              </p>
 
-                                <Controller
-                                    control={control}
-                                    name="validity"
-                                    render={({ field }) => (
-                                        <select
-                                            {...field}
-                                            disabled={modalId}
-                                            className="rounded-md px-3 py-[9px] w-full bg-white/10 backdrop-blur-md outline-none border-[1.5px] border-white/40 text-white text-sm "
-                                            onChange={(e) => field.onChange(e.target.value)}
-                                        // value={field.value}
-                                        >
-                                            <option value="" disabled selected={!field.value}>
-                                                Choose a Validity
-                                            </option>
-                                            {validityDropdown?.map((option: any) => (
-                                                <option key={option.value} value={option.value} className="text-black">
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
+                              <Controller
+                                  control={control}
+                                  name="validity"
+                                  render={({ field }) => (
+                                      <select
+                                          {...field}
+                                          className="rounded-md px-3 py-[9px] w-full bg-white/10 backdrop-blur-md outline-none border-[1.5px] border-white/40 text-white text-sm "
+                                          onChange={(e) => field.onChange(e.target.value)}
+                                      // value={field.value}
+                                      >
+                                          <option value="" disabled selected={!field.value}>
+                                              Choose a Validity
+                                          </option>
+                                          {validityDropdown?.map((option: any) => (
+                                              <option key={option.value} value={option.value} className="text-black">
+                                                  {option.label}
+                                              </option>
+                                          ))}
+                                      </select>
 
-                                    )}
-                                />
+                                  )}
+                              />
 
-                                {errors.validity && (
-                                    <p className="mt-1 text-xs font-medium text-primaryColor">
-                                        {errors.validity.message}
-                                    </p>
-                                )}
-                            </div>
+                              {errors.validity && (
+                                  <p className="mt-1 text-xs font-medium text-primaryColor">
+                                      {errors.validity.message}
+                                  </p>
+                              )}
+                          </div>
+                          )}
 
                             <div className="flex items-end justify-end col-span-12 mt-4">
                                 <button type="submit" className="px-3 py-2 rounded-md bg-primaryColor hover:bg-white/20 hover:text-primaryColor border-[1.5px] hover:border-primaryColor transform transition-all duration-200 ease-linear">
@@ -302,7 +303,7 @@ const ClientsCreateModal = ({ openModal, handleClose, refetch, modalId }: any) =
                 </div>
             </div>
 
-            {loading && <LoaderScreen />}
+            {(loading || getClientData?.isLoading || getClientData?.isFetching) && <LoaderScreen />}
         </>
     )
 }

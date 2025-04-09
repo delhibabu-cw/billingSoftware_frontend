@@ -13,6 +13,10 @@ export const getClientApi = async (query : any) => {
     return apiFunctions.get(`${siteUrls.admin.client}${query}`);
   }
 
+export const getTrashClientApi = async (query : any) => {
+    return apiFunctions.get(`${siteUrls.admin.trashClient}${query}`);
+  }
+
 
 // post client create
 export const postClientApi = async (payload: any) => {
@@ -21,6 +25,10 @@ export const postClientApi = async (payload: any) => {
 
 export const putClientApi = async (payload: any, query : any) => {
   return apiFunctions.put(`${siteUrls.admin.client}/${query}`, payload);
+};
+
+export const putRestoreClientApi = async (query : any) => {
+  return apiFunctions.put(`${siteUrls.admin.restoreClient}/${query}`, {});
 };
 
 // post user create

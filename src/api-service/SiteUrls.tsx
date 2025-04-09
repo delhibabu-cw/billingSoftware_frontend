@@ -30,6 +30,8 @@ const siteUrlsJson = {
     admin: {
       user: 'user',
       client: 'client',
+      trashClient: 'trashClient',
+      restoreClient: 'restoreClient',
       role: "role",
     },
     client: {

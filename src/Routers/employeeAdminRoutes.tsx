@@ -1,4 +1,4 @@
-import SuperAdminDashboard from "../container/SuperAdmin/dashboard";
+import SuperAdminDashboard from "../container/SuperAdmin/trashClients";
 
 export const employeeAdminRoutes = [
     {

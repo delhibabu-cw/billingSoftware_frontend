@@ -1,4 +1,5 @@
 import SuperAdminClients from "../container/SuperAdmin/clients";
+import SuperAmdinTrashClients from "../container/SuperAdmin/trashClients";
 // import SuperAdminDashboard from "../container/SuperAdmin/dashboard";
 
 export const superAdminRoutes = [
@@ -12,6 +13,6 @@ export const superAdminRoutes = [
     },
     {
       path: 'trashClients',
-      element: <SuperAdminClients />,
+      element: <SuperAmdinTrashClients />,
     },
 ]

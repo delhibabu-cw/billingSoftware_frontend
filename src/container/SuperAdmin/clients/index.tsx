@@ -2,23 +2,24 @@ import { useQuery } from "@tanstack/react-query"
 import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScreen"
 import { deleteClientApi, getClientApi } from "../../../api-service/admin"
 import NoDataFound from "../../../components/noDataFound"
-import { FaArrowLeftLong, FaArrowRightLong, FaChevronDown, FaEye } from "react-icons/fa6"
+import { FaArrowLeftLong, FaArrowRightLong, FaChevronDown, FaEye, FaTrash } from "react-icons/fa6"
 import { useState } from "react"
 // import { HiOutlineAdjustmentsVertical } from "react-icons/hi2";
 // import Select from 'react-select';
 import { IoMdAdd } from "react-icons/io";
 import ClientsCreateModal from "./ClientsCreateModal"
-import Pagination from "../../../components/pagination"
-import { MdDelete } from "react-icons/md";
+import Pagination from "../../../components/pagination";
 import toast from "react-hot-toast"
 import ClientsSingleViewModal from "./ClientsSingleViewModal"
 import { FaEdit } from "react-icons/fa"
+import { useNavigate } from "react-router-dom"
 
 
 const SuperAdminClients = () => {
 
     const [currentPage, setCurrentPage] = useState(0);
     const [search, setSearch] = useState('');
+    const navigate = useNavigate()
     // const [selectedProjectOption, setSelectedProjectOption] = useState();
     // const [selectedProjectId, setSelectedProjectId] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -74,6 +75,7 @@ const SuperAdminClients = () => {
             if (deleteApi?.status === 200) {
                 toast.success(deleteApi?.data?.msg)
                 getClientData.refetch()
+                navigate('/trashClients')
             }
         } catch (err) {
             console.log(err)
@@ -220,7 +222,7 @@ const SuperAdminClients = () => {
                                                 <button
                                                     className="flex items-center justify-center w-8 h-8 bg-white text-[#333333] rounded-md hover:bg-primaryColor hover:text-black"
                                                     onClick={() => handleDelete(`${idx?._id}`)}>
-                                                    <MdDelete className="" />
+                                                    <FaTrash className="" />
                                                 </button>
                                             </td>
                                         </tr>
@@ -311,10 +313,10 @@ const SuperAdminClients = () => {
             {(loading || getClientData?.isLoading || getClientData?.isFetching) && <LoaderScreen />}
 
             {openModal && <ClientsCreateModal openModal={openModal} handleClose={() => setOpenModal(!openModal)}
-                refetch={() => getClientData?.refetch()} modalId={singleViewId}/>}
+                refetch={() => getClientData?.refetch()} modalId={singleViewId} openFrom={'trashClients'}/>}
 
                 {openSingleView && <ClientsSingleViewModal openModal={openSingleView} handleClose={()=>setOpenSingleView(!openSingleView)}
-                    modalId={singleViewId}/>}
+                    modalId={singleViewId} openFrom={'clients'}/>}
         </>
     )
 }
