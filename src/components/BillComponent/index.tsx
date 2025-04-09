@@ -2,13 +2,13 @@ import { isFormatDate, isFormatTime } from "../../utils/helper";
 import { useQuery } from "@tanstack/react-query";
 import { getBillPageApi } from "../../api-service/client";
 import { getProfileApi } from "../../api-service/authApi";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import LoaderScreen from "../animation/loaderScreen/LoaderScreen";
 import { MdAccessTime, MdDateRange } from "react-icons/md";
 
 const BillComponent = ({ billData }: any) => {
-  // const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  // const isMobile = window.innerWidth <= 768;
+  const [hasPrinted, setHasPrinted] = useState(false); // prevent double print on rerenders
+
   const { data: billPageResp, isLoading: isBillPageLoading } = useQuery({
     queryKey: ["getBillPageData"],
     queryFn: () => getBillPageApi(""),
@@ -39,88 +39,78 @@ const BillComponent = ({ billData }: any) => {
     .toFixed(2)
     .toLocaleString("en-IN");
 
-    const handlePrint = () => {
-      const printContent = document.getElementById("printArea");
-      const isMobile = window.innerWidth <= 768;
-        console.log("isMobile", isMobile);
-        if (!printContent) {
-          console.log("printContent is undefined or null");
-          return;
-        }
-      if (printContent) {
-        if (isMobile) {
-          console.log("isMobile",isMobile);
-          
-          // For mobile: Replace entire body content and print from same window
-          const originalContent = document.body.innerHTML;
-          const printHtml = `
-            <html>
-              <head>
-                <title>Print Bill</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <script src="https://cdn.tailwindcss.com"></script>
-                <style>
-                  @page { margin: 20px; }
-                  body { padding: 20px; background: white; }
-                </style>
-              </head>
-              <body>${printContent.innerHTML}</body>
-            </html>
-          `;
-    
-          document.body.innerHTML = printHtml;
-          window.print();
-          document.body.innerHTML = originalContent;
-          window.location.reload(); // reload to restore app
-        } else {
-          // Desktop: Use popup window
-          const newWin = window.open("", "_blank");
-          if (newWin) {
-            newWin.document.write(`
-              <html>
-                <head>
-                  <title>Print Bill</title>
-                  <meta charset="utf-8" />
-                  <meta name="viewport" content="width=device-width, initial-scale=1" />
-                  <script src="https://cdn.tailwindcss.com"></script>
-                  <style>
-                    @page {
-                      margin: 20px;
-                    }
-                    body {
-                      padding: 20px;
-                      background: white;
-                    }
-                  </style>
-                </head>
-                <body>
-                  <div id="app">${printContent.innerHTML}</div>
-                  <script>
-                    window.onload = function () {
-                      setTimeout(() => {
-                        window.print();
-                        setTimeout(() => window.close(), 300);
-                      }, 500);
-                    };
-                  </script>
-                </body>
-              </html>
-            `);
-            newWin.document.close();
-          }
-        }
-      }
-    };
-    
+  const handlePrint = () => {
+    const printContent = document.getElementById("printArea");
+    const isMobile = window.innerWidth <= 768;
 
-  // Auto print for desktop only
-  useEffect(() => {
-    if (billData && billPageData) {
-      handlePrint();
+    if (!printContent) {
+      console.warn("Print area not found");
+      return;
     }
-  }, [billData, billPageData]);
+
+    if (isMobile) {
+      const originalContent = document.body.innerHTML;
+      const printHtml = `
+        <html>
+          <head>
+            <title>Print Bill</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              @page { margin: 10px; }
+              body { padding: 10px;  }
+            </style>
+          </head>
+          <body>${printContent.innerHTML}</body>
+        </html>
+      `;
+      document.body.innerHTML = printHtml;
+      window.print();
+      document.body.innerHTML = originalContent;
+      window.location.reload(); // Restore full app
+    } else {
+      const newWindow = window.open("", "_blank");
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>Print Bill</title>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <script src="https://cdn.tailwindcss.com"></script>
+              <style>
+                @page { margin: 20px; }
+                body { padding: 20px; background: white; }
+              </style>
+            </head>
+            <body>
+              <div id="printRoot">${printContent.innerHTML}</div>
+              <script>
+                window.onload = () => {
+                  setTimeout(() => {
+                    window.print();
+                    setTimeout(() => window.close(), 300);
+                  }, 500);
+                }
+              </script>
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
+    }
+  };
+
+  // Trigger print only once when data is loaded
+  useEffect(() => {
+    if (billData && billPageData && !hasPrinted) {
+      handlePrint();
+      setHasPrinted(true);
+    }
+  }, [billData, billPageData, hasPrinted]);
 
   if (isBillPageLoading || isProfileLoading) return <LoaderScreen />;
+
 
   return (
     <div>
