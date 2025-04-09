@@ -46,10 +46,14 @@ const ClientBillPage = () => {
     signature: yup.string().default(''),
     terms: yup.string().default(''),
     printSize: yup.string().required('This Field is required.'),
+    font: yup.string().optional(),
   });
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      font: "font-Poppins", // 👈 Default font set here
+    },
   });
 
   // const watchShowLogo = watch('showLogo')
@@ -63,6 +67,7 @@ const ClientBillPage = () => {
   const watchShowBillNo = watch('showInvoiceNo')
   const watchSignature = watch('signature')
   const watchTerms = watch('terms')
+  const watchFont = watch('font')
 
   const handleSingleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>, title: any) => {
     const file = e.target.files?.[0]; // Get the first selected file
@@ -142,11 +147,11 @@ const ClientBillPage = () => {
           signature : data?.signature,
           terms : data?.terms
         },
-        printSize : data?.printSize
-      
+        printSize : data?.printSize,
+        font : data?.font
     }
 
-    console.log(payload);
+    // console.log(payload);
     
     if(profileData?.billPageDetails === 'no'){
       const postApi = await postBillPageApi(payload)
@@ -185,12 +190,13 @@ const ClientBillPage = () => {
       setValue('signature', billPageData?.footer?.signature)
       setValue('terms', billPageData?.footer?.terms)
       setValue('printSize', billPageData?.printSize)
+      setValue('font', billPageData?.font)
     }
   },[billPageData, setValue])
 
   return (
     <>
-      <div className="grid grid-cols-12 gap-4 pt-24 lg:pt-32 px-[4%] pb-10">
+      <div className={`grid grid-cols-12 gap-4 pt-24 lg:pt-32 px-[4%] pb-10`}>
         {/* Left Side - Print Settings */}
         <div className="h-full col-span-12 p-4 rounded-md shadow-md lg:col-span-6 xl:col-span-5 bg-white/10">
           <h2 className="mb-2 text-lg font-bold text-white">Print Settings</h2>
@@ -201,7 +207,7 @@ const ClientBillPage = () => {
               <p className="px-2 py-1 bg-primaryColor w-fit rounded-3xl">Header Details</p>
               <div className="grid grid-cols-12 gap-3 mt-2 ">
                 <div className="col-span-12 lg:col-span-6">
-                  <p className="mb-1 text-white/80 font-OpenSans">Title</p>
+                  <p className="mb-1 text-white/80 ">Title</p>
                   <input type="text"
                     placeholder="Enter Title"
                     className=" rounded-md px-3 py-[6px]  w-full bg-white/10 backdrop-blur-md outline-none placeholder:text-white/90 placeholder:text-sm border-[1.5px] border-white/40 text-white"
@@ -210,7 +216,7 @@ const ClientBillPage = () => {
                   {errors.title && <p className="mt-1 text-xs font-medium text-primaryColor">{getErrorMessage(errors.title)}</p>}
                 </div>
                 <div className="col-span-12 lg:col-span-6">
-                  <p className="mb-1 text-white/80 font-OpenSans">Address</p>
+                  <p className="mb-1 text-white/80 ">Address</p>
                   <input type="text"
                     placeholder="Enter Address"
                     className=" rounded-md px-3 py-[6px]  w-full bg-white/10 backdrop-blur-md outline-none placeholder:text-white/90 placeholder:text-sm border-[1.5px] border-white/40 text-white"
@@ -279,7 +285,7 @@ const ClientBillPage = () => {
                         <div>
                           <label className="flex flex-col items-center justify-center text-[#2B2B2D] cursor-pointer" htmlFor={`productImage`}>
                             <BiUpload className="w-9 h-9 text-[#C5C5C5]" />
-                            <p className="text-[#C5C5C5] font-Poppins">Upload Logo</p>
+                            <p className="text-[#C5C5C5] ">Upload Logo</p>
                           </label>
                           <input
                             id={`productImage`}
@@ -360,7 +366,7 @@ const ClientBillPage = () => {
               <p className="px-2 py-1 bg-primaryColor w-fit rounded-3xl">Invoice Details</p>
               <div className="grid grid-cols-12 gap-3 mt-2 ">
                 <div className="col-span-12 lg:col-span-6">
-                  <p className="mb-1 text-white/80 font-OpenSans">Terms</p>
+                  <p className="mb-1 text-white/80 ">Terms</p>
                   <input type="text"
                     placeholder="Enter Terms"
                     className=" rounded-md px-3 py-[6px]  w-full bg-white/10 backdrop-blur-md outline-none placeholder:text-white/90 placeholder:text-sm border-[1.5px] border-white/40 text-white"
@@ -368,7 +374,7 @@ const ClientBillPage = () => {
                   />
                 </div>
                 <div className="col-span-12 md:col-span-6">
-                  <label htmlFor="contact-lead-score" className="mb-1 text-white/80 font-OpenSans">Signature</label>
+                  <label htmlFor="contact-lead-score" className="mb-1 text-white/80 ">Signature</label>
                   <div className="min-h-fit border-dashed border-primaryColor border-[2px] !border-spacing-10 rounded-md flex justify-center items-center mt-2 py-6">
                     {watchSignature ? (
                       <div className="flex flex-wrap justify-center gap-3 overflow-hidden">
@@ -412,7 +418,7 @@ const ClientBillPage = () => {
                       <div>
                         <label className="flex flex-col items-center justify-center text-[#2B2B2D] cursor-pointer" htmlFor={`signature`}>
                           <BiUpload className="w-9 h-9 text-[#C5C5C5]" />
-                          <p className="text-[#C5C5C5] font-Poppins">Upload Signature Image</p>
+                          <p className="text-[#C5C5C5] ">Upload Signature Image</p>
                         </label>
                         <input
                           id={`signature`}
@@ -427,9 +433,9 @@ const ClientBillPage = () => {
               </div>
             </div>
             <div className="col-span-12">
-              <div className="grid grid-cols-12">
-                <div className="col-span-6">
-                  <p className="mb-1 text-white/80 font-OpenSans">PrintSize <span className="text-primaryColor">*</span></p>
+              <div className="grid grid-cols-12 gap-3">
+                <div className="col-span-12 md:col-span-6">
+                  <p className="mb-1 text-white/80 ">PrintSize <span className="text-primaryColor">*</span></p>
                   <div className="relative col-span-6 overflow-hidden">
                     <select
                       {...register("printSize")}
@@ -448,6 +454,27 @@ const ClientBillPage = () => {
                   </div>
                   {errors.printSize && <p className="mt-1 text-xs text-primaryColor">{getErrorMessage(errors.printSize)}</p>}
                 </div>
+                <div className="col-span-12 md:col-span-6">
+                  <p className="mb-1 text-white/80">Font <span className="text-primaryColor">*</span></p>
+                  <div className="relative col-span-6 overflow-hidden">
+                    <select
+                      {...register("font")}
+                      className="appearance-none rounded-md  px-3 py-[6px] w-full bg-white/10 text-white outline-none border-[1.5px] border-white/40 cursor-pointer"
+                      defaultValue=""
+                    >
+                      <option value="" disabled hidden>Choose Font</option>
+                      <option className="bg-gray-400 text-white/80" value="font-Poppins">Poppins</option>
+                      <option className="bg-gray-400 text-white/80" value="font-Alice">Alice</option>
+                      <option className="bg-gray-400 text-white/80" value="font-OpenSans">OpenSans</option>
+                      <option className="bg-gray-400 text-white/80" value="font-Montserrat">Montserrat</option>
+                      <option className="bg-gray-400 text-white/80" value="font-inter">Inter</option>
+                    </select>
+                    <div className="absolute text-white transform -translate-y-1/2 pointer-events-none top-1/2 right-3">
+                      ▼
+                    </div>
+                  </div>
+                  {errors.font && <p className="mt-1 text-xs text-primaryColor">{getErrorMessage(errors.font)}</p>}
+                </div>
                 
               </div>
 
@@ -459,7 +486,7 @@ const ClientBillPage = () => {
         </div>
 
         {/* Right Side - Invoice Preview */}
-        <div className={`col-span-12 lg:col-span-6 xl:col-span-7 p-2 md:p-4 border rounded-md shadow-md bg-white/95 h-full overflow-y-auto hide-scrollbar`} id="printArea">
+        <div className={`col-span-12 lg:col-span-6 xl:col-span-7 p-2 md:p-4 border rounded-md shadow-md bg-white/95 h-full overflow-y-auto hide-scrollbar ${watchFont}`} id="printArea">
           <div className="grid grid-cols-3 gap-3">
             <p className="text-xl font-bold ">Invoice</p>
             {watchShowBillNo ? (
@@ -486,10 +513,10 @@ const ClientBillPage = () => {
               />
             )}
             {watchTitle && (
-              <p className="max-w-md mt-4 text-xl font-bold text-center md:text-2xl font-Poppins">{watchTitle}</p>
+              <p className="max-w-md mt-4 text-xl font-bold text-center md:text-2xl ">{watchTitle}</p>
             )}
             {watchAddress && (
-              <p className="flex flex-wrap w-full !max-w-md mt-2 font-medium text-sm justify-center md:text-base text-center font-Poppins">{watchAddress}</p>
+              <p className="flex flex-wrap w-full !max-w-md mt-2 font-medium text-sm justify-center md:text-base text-center ">{watchAddress}</p>
             )}
           </div>
 
@@ -567,19 +594,27 @@ const ClientBillPage = () => {
             </tfoot>
 
           </table>
-          <div className="flex items-center justify-between w-full gap-3 mt-3">
-            <div>
-              {watchTerms && (
-                <p className="flex max-w-sm text-xs font-semibold capitalize md:text-center md:text-sm">{watchTerms}</p>
-              )}
-            </div>
-            <div>
-              {watchSignature && (
-                <img src={watchSignature} className="object-cover w-20 border rounded h-14 md:h-20 md:w-36" alt="" />
-              )}
-            </div>
+          {watchSignature != '' ? (
+          <div className="grid w-full grid-cols-2 gap-3 mt-3 md:grid-cols-3">
+            <div className="hidden md:block"></div>
+          <div>
+            {watchTerms && (
+              <p className="flex items-center justify-center h-full max-w-sm text-xs font-semibold capitalize md:text-center md:text-sm">{watchTerms}</p>
+            )}
           </div>
-          <p className="mt-2 text-[11px] text-center">Billing Partner CORPWINGS IT SERVICE , 6380341944</p>
+          <div>
+            {watchSignature && (
+              <img src={watchSignature} className="object-cover w-20 ml-auto border rounded h-14 md:h-20 md:w-36" alt="" />
+            )}
+          </div>
+        </div>  
+          ) : (
+            watchTerms && (
+              <p className="flex justify-center mt-2 text-xs font-semibold text-center capitalize md:text-sm">{watchTerms}</p>
+            )
+          )}
+          
+          <p className="mt-2 text-[11px] text-center ">Billing Partner CORPWINGS IT SERVICE , 6380341944</p>
         </div>
       </div>
 

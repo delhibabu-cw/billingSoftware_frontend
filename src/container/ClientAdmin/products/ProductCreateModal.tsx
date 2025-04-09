@@ -419,7 +419,7 @@ const ProductCreateModal = ({ openModal, handleClose, modalId, modalType, produc
                                         <div>
                                             <label className="flex flex-col items-center justify-center text-[#2B2B2D] cursor-pointer" htmlFor={`productImage`}>
                                                 <BiUpload className="w-9 h-9 text-[#C5C5C5]" />
-                                                <p className="text-[#C5C5C5] font-Poppins">Upload Category Image</p>
+                                                <p className="text-[#C5C5C5] font-Poppins">Upload Product Image</p>
                                             </label>
                                             <input
                                                 id={`productImage`}

@@ -1,5 +1,5 @@
 import SuperAdminClients from "../container/SuperAdmin/clients";
-import SuperAmdinTrashClients from "../container/SuperAdmin/trashClients";
+import SuperAmdinTrashClients from "../container/SuperAdmin/dashboard";
 // import SuperAdminDashboard from "../container/SuperAdmin/dashboard";
 
 export const superAdminRoutes = [
