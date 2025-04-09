@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { TiInputChecked } from "react-icons/ti";
 import CreateBillModal from "./CreateBillModal";
 import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScreen";
-import { isFormatDate, isFormatTime } from "../../../utils/helper";
+// import { isFormatDate, isFormatTime } from "../../../utils/helper";
 
 
 const ClientAdminDashboard = () => {
@@ -277,6 +277,9 @@ const ClientAdminDashboard = () => {
           googleFontLink = `<link href="https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap" rel="stylesheet">`;
           customFontStyle = `<style>.${fontClass} { font-family: '${fontName}', sans-serif; }</style>`;
         }
+
+        console.log(totalPrice,totalGst,googleFontLink,customFontStyle );
+        
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
