@@ -36,13 +36,13 @@ const BillComponent = ({ billData }: any) => {
     .toFixed(2).toLocaleString('en-IN');
 
 
-  // ✅ UseEffect to open printable bill in a new window (better for mobile)
-  useEffect(() => {
-    if (billPageData && billData) {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    const handlePrint = () => {
       const printContent = document.getElementById("printArea");
+  
       if (printContent) {
         const newWin = window.open("", "_blank");
-  
         if (newWin) {
           newWin.document.write(`
             <html>
@@ -64,12 +64,11 @@ const BillComponent = ({ billData }: any) => {
               <body>
                 <div id="app">${printContent.innerHTML}</div>
                 <script>
-                  // Wait for images and other content to load
-                  window.onload = function() {
-                    setTimeout(function () {
+                  window.onload = function () {
+                    setTimeout(() => {
                       window.print();
                       setTimeout(() => window.close(), 300);
-                    }, 300); // extra delay helps on mobile
+                    }, 500);
                   };
                 </script>
               </body>
@@ -78,15 +77,22 @@ const BillComponent = ({ billData }: any) => {
           newWin.document.close();
         }
       }
-    }
-  }, [billPageData, billData]);
+    };
+  
+    // Auto print on desktop only
+    useEffect(() => {
+      if (billData && billPageData) {
+        handlePrint();
+      }
+    }, [billData , billPageData]);
   
   
 
 
   return (
     <>
-      <div id="printArea" className={`h-full p-4 border rounded-md shadow-md bg-white   ${billPageData?.printSize} ${billPageData?.font}`}>
+    <div>
+    <div id="printArea" className={`h-full p-4 border rounded-md shadow-md bg-white   ${billPageData?.printSize} ${billPageData?.font}`}>
         <div className="grid grid-cols-3 gap-3">
           <p className="text-xl font-bold ">Invoice</p>
           {billPageData?.invoiceFields?.showInvoiceNo ? (
@@ -215,6 +221,17 @@ const BillComponent = ({ billData }: any) => {
         )}
         <p className="mt-2 text-[11px] text-center">Billing Partner CORPWINGS IT SERVICE , 6380341944</p>
       </div>
+
+    {isMobile && (
+        <button
+          onClick={handlePrint}
+          className="px-4 py-2 mt-4 text-white bg-blue-600 rounded hover:bg-blue-700"
+        >
+          Print Bill
+        </button>
+      )}
+    </div>
+      
 
       {(getBillPageData?.isLoading || getBillPageData?.isFetching || getProfileData.isLoading) && <LoaderScreen />}
     </>
