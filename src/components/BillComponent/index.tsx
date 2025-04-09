@@ -7,8 +7,8 @@ import LoaderScreen from "../animation/loaderScreen/LoaderScreen";
 import { MdAccessTime, MdDateRange } from "react-icons/md";
 
 const BillComponent = ({ billData }: any) => {
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
+  // const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  // const isMobile = window.innerWidth <= 768;
   const { data: billPageResp, isLoading: isBillPageLoading } = useQuery({
     queryKey: ["getBillPageData"],
     queryFn: () => getBillPageApi(""),
@@ -39,50 +39,83 @@ const BillComponent = ({ billData }: any) => {
     .toFixed(2)
     .toLocaleString("en-IN");
 
-  const handlePrint = () => {
-    const printContent = document.getElementById("printArea");
-
-    if (printContent) {
-      const newWin = window.open("", "_blank");
-      if (newWin) {
-        newWin.document.write(`
-          <html>
-            <head>
-              <title>Print Bill</title>
-              <meta charset="utf-8" />
-              <meta name="viewport" content="width=device-width, initial-scale=1" />
-              <script src="https://cdn.tailwindcss.com"></script>
-              <style>
-                @page {
-                  margin: 20px;
-                }
-                body {
-                  padding: 20px;
-                  background: white;
-                }
-              </style>
-            </head>
-            <body>
-              <div id="app">${printContent.innerHTML}</div>
-              <script>
-                window.onload = function () {
-                  setTimeout(() => {
-                    window.print();
-                    setTimeout(() => window.close(), 300);
-                  }, 500);
-                };
-              </script>
-            </body>
-          </html>
-        `);
-        newWin.document.close();
+    const handlePrint = () => {
+      const printContent = document.getElementById("printArea");
+      const isMobile = window.innerWidth <= 768;
+        console.log("isMobile", isMobile);
+        if (!printContent) {
+          console.log("printContent is undefined or null");
+          return;
+        }
+      if (printContent) {
+        if (isMobile) {
+          console.log("isMobile",isMobile);
+          
+          // For mobile: Replace entire body content and print from same window
+          const originalContent = document.body.innerHTML;
+          const printHtml = `
+            <html>
+              <head>
+                <title>Print Bill</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <script src="https://cdn.tailwindcss.com"></script>
+                <style>
+                  @page { margin: 20px; }
+                  body { padding: 20px; background: white; }
+                </style>
+              </head>
+              <body>${printContent.innerHTML}</body>
+            </html>
+          `;
+    
+          document.body.innerHTML = printHtml;
+          window.print();
+          document.body.innerHTML = originalContent;
+          window.location.reload(); // reload to restore app
+        } else {
+          // Desktop: Use popup window
+          const newWin = window.open("", "_blank");
+          if (newWin) {
+            newWin.document.write(`
+              <html>
+                <head>
+                  <title>Print Bill</title>
+                  <meta charset="utf-8" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1" />
+                  <script src="https://cdn.tailwindcss.com"></script>
+                  <style>
+                    @page {
+                      margin: 20px;
+                    }
+                    body {
+                      padding: 20px;
+                      background: white;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div id="app">${printContent.innerHTML}</div>
+                  <script>
+                    window.onload = function () {
+                      setTimeout(() => {
+                        window.print();
+                        setTimeout(() => window.close(), 300);
+                      }, 500);
+                    };
+                  </script>
+                </body>
+              </html>
+            `);
+            newWin.document.close();
+          }
+        }
       }
-    }
-  };
+    };
+    
 
   // Auto print for desktop only
   useEffect(() => {
-    if (billData && billPageData && !isMobile) {
+    if (billData && billPageData) {
       handlePrint();
     }
   }, [billData, billPageData]);
@@ -271,14 +304,14 @@ const BillComponent = ({ billData }: any) => {
       </div>
 
       {/* Mobile Print Button */}
-      {isMobile && (
+      {/* {isMobile && (
         <button
           onClick={handlePrint}
           className="px-4 py-2 mt-4 text-white bg-blue-600 rounded hover:bg-blue-700"
         >
           Print Bill
         </button>
-      )}
+      )} */}
     </div>
   );
 };
