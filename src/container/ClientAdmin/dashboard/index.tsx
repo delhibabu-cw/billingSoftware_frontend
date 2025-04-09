@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProductCategoryApi, postCreateBillApi, putClientProfileApi } from "../../../api-service/client";
+import { getBillPageApi, getProductCategoryApi, postCreateBillApi, putClientProfileApi } from "../../../api-service/client";
 import { FaAngleDown, FaAngleUp, FaMinus, FaPlus, FaToggleOff, FaToggleOn } from "react-icons/fa6";
 import { getProfileApi } from "../../../api-service/authApi";
 import { useCallback, useMemo, useState } from "react";
@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { TiInputChecked } from "react-icons/ti";
 import CreateBillModal from "./CreateBillModal";
 import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScreen";
-import BillComponent from "../../../components/BillComponent";
+import { isFormatDate, isFormatTime } from "../../../utils/helper";
 
 
 const ClientAdminDashboard = () => {
@@ -20,7 +20,7 @@ const ClientAdminDashboard = () => {
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
     const [openModal, setOpenModal] = useState(false)
-    const [billData, setBillData] = useState<any>(null);
+    // const [billData, setBillData] = useState<any>(null);
 
     const getProfileData = useQuery({
         queryKey: ["getProfileData"],
@@ -111,14 +111,14 @@ const ClientAdminDashboard = () => {
     const handleToggleButton = async (title: any, data: any) => {
         try {
             setLoading(true)
-            
+
             let payload;
 
             if (title === 'gstToggle') {
                 payload = { overAllGstToggle: data }
             } else if (title === 'customerToggle') {
                 payload = { customerToggle: data }
-            } else if(title === 'employeeToggle') {
+            } else if (title === 'employeeToggle') {
                 payload = { employeeToggle: data }
             }
 
@@ -160,61 +160,274 @@ const ClientAdminDashboard = () => {
     console.log('totalAmount', totalAmount);
     console.log('selected products', selectedProducts);
 
+    const getBillPageData = useQuery({
+        queryKey: ["getBillPageData"],
+        queryFn: () => getBillPageApi(""),
+    });
+
     const handleCreateBill = async () => {
-
         try {
-            setLoading(true)
-
-            const payload = {
-                totalAmount: totalAmount,
-                selectedProducts: selectedProducts?.map((idx: any) => {
-                    // Calculate total and GST amount per product
-                    const gstAmountPerUnit = profileData?.overAllGstToggle === 'on' ? idx.gstAmount : 0;
-                    const totalGstAmount = gstAmountPerUnit * idx.quantitySelected; // GST for all units
-
-                    return {
-                        productId: idx?._id,
-                        quantity: idx?.quantitySelected,
-                        name: idx?.name,
-                        price: idx.price,
-                        actualPrice: idx?.actualPrice,
-                        profitMargin: idx?.profitMargin,
-                        gstAmount: totalGstAmount,  // Store total GST per product
-                        gstWithoutTotal: (idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx.price) * idx.quantitySelected,
-                        gstWithTotal: profileData?.overAllGstToggle === 'on'
-                            ? ((idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx.price) + idx.gstAmount) * idx.quantitySelected
-                            : (idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx.price) * idx.quantitySelected,
-                        productAddedFromStock: idx?.productAddedFromStock
-                    };
-                })
+          setLoading(true);
+      
+          const payload = {
+            totalAmount,
+            selectedProducts: selectedProducts?.map((idx: any) => {
+              const gstAmountPerUnit =
+                profileData?.overAllGstToggle === "on" ? idx.gstAmount : 0;
+              const totalGstAmount = gstAmountPerUnit * idx.quantitySelected;
+      
+              return {
+                productId: idx?._id,
+                quantity: idx?.quantitySelected,
+                name: idx?.name,
+                price: idx.price,
+                actualPrice: idx?.actualPrice,
+                profitMargin: idx?.profitMargin,
+                gstAmount: totalGstAmount,
+                gstWithoutTotal:
+                  (idx?.productAddedFromStock === "yes"
+                    ? idx?.actualPrice
+                    : idx.price) * idx.quantitySelected,
+                gstWithTotal:
+                  profileData?.overAllGstToggle === "on"
+                    ? (idx?.productAddedFromStock === "yes"
+                        ? idx?.actualPrice
+                        : idx.price + idx.gstAmount) * idx.quantitySelected
+                    : (idx?.productAddedFromStock === "yes"
+                        ? idx?.actualPrice
+                        : idx.price) * idx.quantitySelected,
+                productAddedFromStock: idx?.productAddedFromStock,
+              };
+            }),
+          };
+      
+          const postApi = await postCreateBillApi(payload);
+      
+          if (postApi?.status === 200) {
+            toast.success(postApi?.data?.msg);
+            const billPayload = {
+              billNo: postApi?.data?.result?.billNo || "N/A",
+              dateTime: postApi?.data?.result?.createdAt,
+              totalAmount: payload.totalAmount,
+              selectedProducts: payload.selectedProducts,
+              customer: postApi?.data?.result?.customer,
+              employee: postApi?.data?.result?.employee,
             };
-
-            console.log(payload);
-            const postApi = await postCreateBillApi(payload)
-            if (postApi?.status === 200) {
-                toast.success(postApi?.data?.msg)
-                console.log(postApi);
-                console.log(postApi?.data);
-
-                // Store the bill data in state
-                setBillData({
-                    billNo: postApi?.data?.result?.billNo || "N/A",
-                    dateTime: postApi?.data?.result?.createdAt,
-                    totalAmount: payload.totalAmount,
-                    selectedProducts: payload.selectedProducts
-                });
-
-                setSelectedProducts([])
-            }
-
+      
+            // Wait for the query to refetch with billData
+            await getBillPageData.refetch();
+      
+            // Then print
+            handlePrint(billPayload, getBillPageData?.data?.data?.result);
+      
+            setSelectedProducts([]);
+          }
         } catch (err) {
-            console.log(err)
+          console.log(err);
         } finally {
-            setLoading(false)
+          setLoading(false);
         }
-    };
+      };
+      
+      const handlePrint = (billData: any, billPageData: any) => {
+        const content = generatePrintContent(billData, billPageData);
+      
+        const iframe = document.createElement("iframe");
+        iframe.style.position = "fixed";
+        iframe.style.top = "-10000px";
+        iframe.style.left = "-10000px";
+        document.body.appendChild(iframe);
+      
+        const iframeWindow = iframe.contentWindow;
+        if (iframeWindow) {
+          iframeWindow.document.open();
+          iframeWindow.document.write(content);
+          iframeWindow.document.close();
+      
+          setTimeout(() => {
+            iframeWindow.focus();
+            iframeWindow.print();
+            document.body.removeChild(iframe);
+          }, 800);
+        }
+      };
+      
+      const generatePrintContent = (billData: any, billPageData: any) => {
+        const totalPrice = billData?.selectedProducts.reduce(
+          (sum: any, product: any) =>
+            sum +
+            ((product?.productAddedFromStock === "yes"
+              ? product?.actualPrice
+              : product?.price) *
+              product.quantity || 0),
+          0
+        );
+      
+        const totalGst = billData?.selectedProducts.reduce(
+          (sum: any, product: any) => sum + (product.gstAmount || 0),
+          0
+        );
 
-
+        const fontClass = billPageData?.font || "";
+        let googleFontLink = "";
+        let customFontStyle = "";
+        
+        if (fontClass) {
+          const fontName = fontClass.replace("font-", "").replace(/\+/g, " ");
+          googleFontLink = `<link href="https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap" rel="stylesheet">`;
+          customFontStyle = `<style>.${fontClass} { font-family: '${fontName}', sans-serif; }</style>`;
+        }
+        
+        return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <title>Print Bill</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          ${googleFontLink}
+          ${customFontStyle}
+        </head>
+        <body>
+          <div class=" rounded-md p-3 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
+          <!-- Invoice Info -->
+            <div class="grid grid-cols-3 gap-3 text-sm">
+              <p class="font-bold text-lg">Invoice</p>
+        
+              ${billPageData?.invoiceFields?.showInvoiceNo
+                ? `<p class="text-center">Bill No: <span class="font-semibold">${billData?.billNo}</span></p>`
+                : `<p></p>`
+              }
+        
+             <p class="text-right flex justify-end gap-2 items-center text-sm text-gray-700">
+                <span class="flex items-center gap-1">
+                    <!-- Calendar Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    ${isFormatDate(billData?.dateTime)}
+                </span>
+                |
+                <span class="flex items-center gap-1">
+                    <!-- Clock Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    ${isFormatTime(billData?.dateTime)}
+                </span>
+                </p>
+            </div>
+            
+            <!-- Header Section -->
+            <div class="flex flex-col items-center gap-2 mt-4">
+              ${billPageData?.header?.logo?.logo_Url
+                ? `<img
+                    src="${billPageData?.header?.logo?.logo_Url}"
+                    alt="Logo"
+                    class="${billPageData?.header?.logo?.logoWidth || "w-36"} ${billPageData?.header?.logo?.logoHeight || "h-36"}
+                           ${billPageData?.header?.logo?.logoCircle ? "rounded-full" : "rounded"}
+                           ${billPageData?.header?.logoZoom ? "object-cover" : "object-fill"}
+                           shadow"
+                  />`
+                : ""
+              }
+        
+              ${billPageData?.header?.businessName
+                ? `<h1 class="text-2xl font-bold text-center">${billPageData?.header?.businessName}</h1>`
+                : ""
+              }
+        
+              ${billPageData?.header?.address
+                ? `<p class="text-center text-sm">${billPageData?.header?.address}</p>`
+                : ""
+              }
+            </div>
+        
+            <!-- Parties -->
+            <div class="flex justify-between mt-4 text-sm">
+              ${billPageData?.invoiceFields?.showCustomer
+                ? `<div>
+                    <p class="font-medium text-base">Customer Details</p>
+                    <p>Name: <span class="font-semibold">${billData?.customer?.name || ""}</span></p>
+                    <p>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
+                  </div>`
+                : ""
+              }
+        
+              ${billPageData?.invoiceFields?.showEmployee
+                ? `<div>
+                    <p class="font-medium text-base">Employee Details</p>
+                    <p>Name: <span class="font-semibold">${billData?.employee?.fullName || ""}</span></p>
+                    <p>ID: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
+                  </div>`
+                : ""
+              }
+            </div>
+        
+            <!-- Title -->
+            <hr class="my-2 border-dashed border-black/80" />
+            <h2 class="text-center font-semibold text-xl">Cash Bill</h2>
+            <hr class="my-2 border-dashed border-black/80" />
+        
+            <!-- Table -->
+            <table class="w-full border border-collapse text-sm mt-2">
+              <thead>
+                <tr class="bg-gray-100">
+                  <th class="p-2 border">S.No</th>
+                  <th class="p-2 border">Product</th>
+                  <th class="p-2 border">Price</th>
+                  <th class="p-2 border">Quantity</th>
+                  <th class="p-2 border">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${billData?.selectedProducts?.map((item:any, index:any) => {
+                  const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
+                  const amount = price * item.quantity;
+                  return `
+                    <tr>
+                      <td class="p-2 border text-center">${index + 1}</td>
+                      <td class="p-2 border">${item.name}</td>
+                      <td class="p-2 border text-center">₹ ${price.toLocaleString("en-IN")}</td>
+                      <td class="p-2 border text-center">${item.quantity}</td>
+                      <td class="p-2 border text-right">₹ ${amount.toLocaleString("en-IN")}</td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+              <tfoot class="font-medium">
+                ${
+                  profileData?.overAllGstToggle === "on"
+                    ? `
+                      <tr>
+                        <td colspan="4" class="p-2 border text-right">Sub Total</td>
+                        <td class="p-2 border text-right">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="4" class="p-2 border text-right">GST (${profileData?.gstPercentage}%)</td>
+                        <td class="p-2 border text-right">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                      </tr>
+                    `
+                    : ""
+                }
+                <tr class="font-bold text-base">
+                  <td colspan="4" class="p-2 border text-right">Total</td>
+                  <td class="p-2 border text-right">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                </tr>
+              </tfoot>
+            </table>
+        
+            <!-- Footer Terms -->
+            ${
+              billPageData?.footer?.terms
+                ? `<p class="text-center text-xs mt-4">${billPageData?.footer?.terms}</p>`
+                : ""
+            }
+          </div>
+        </body>
+        </html>
+        `;        
+      };
 
     return (
         <>
@@ -629,9 +842,9 @@ const ClientAdminDashboard = () => {
             {openModal && <CreateBillModal openModal={openModal} handleClose={() => setOpenModal(!openModal)} totalAmount={totalAmount}
                 selectedProducts={selectedProducts} clearSelectedProducts={() => setSelectedProducts([])} />}
 
-            <div className="!hidden">
+            {/* <div className="!hidden">
                 <BillComponent billData={billData} />
-            </div>
+            </div> */}
         </>
     );
 };

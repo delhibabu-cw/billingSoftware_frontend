@@ -115,7 +115,7 @@ const BillComponent = ({ billData }: any) => {
   return (
     <div>
       <div
-        id="printArea"
+        id="printArea"  
         className={`h-full p-4 border rounded-md shadow-md bg-white ${billPageData?.printSize} ${billPageData?.font}`}
       >
         <div className="grid grid-cols-3 gap-3">
