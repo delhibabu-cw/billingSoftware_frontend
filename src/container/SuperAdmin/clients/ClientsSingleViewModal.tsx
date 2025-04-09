@@ -2,6 +2,7 @@ import  { useMemo } from 'react'
 import { getClientApi, getTrashClientApi } from '../../../api-service/admin';
 import { useQuery } from '@tanstack/react-query';
 import { decryptPassword, isFormatDate, isFormatTime } from '../../../utils/helper';
+import LoaderScreen from '../../../components/animation/loaderScreen/LoaderScreen';
 
 const ClientsSingleViewModal = ({ openModal, handleClose, modalId , openFrom} : any) => {
 
@@ -199,6 +200,8 @@ const plainPassword = useMemo(() => {
         </div>
     </div>
     </div>
+
+    {(getClientData?.isLoading || getClientData.isFetching) && <LoaderScreen/>}
     </>
   )
 }
