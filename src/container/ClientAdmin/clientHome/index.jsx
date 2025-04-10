@@ -264,24 +264,20 @@ const ClientAdminDashboard = () => {
       
       
     const handlePrint = (billData, billPageData) => {
-        const content = generatePrintContent(billData, billPageData);
-      
-        const printWindow = window.open("", "_blank", "width=600,height=800");
-        if (!printWindow) {
-          alert("Popup blocked! Please allow popups for this site.");
-          return;
-        }
-      
-        printWindow.document.open();
-        printWindow.document.write(content);
-        printWindow.document.close();
-      
-        // Wait for content to render
-        printWindow.onload = () => {
-          printWindow.focus();
-          printWindow.print();
-        };
+        const printContent = generatePrintContent(billData, billPageData);
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.top = '-10000px';
+        iframe.style.left = '-10000px';
+    
+        document.body.appendChild(iframe);
+    
+        iframe.contentWindow.document.open();
+        iframe.contentWindow.document.write(printContent);
+        iframe.contentWindow.print();
       };
+      
       
       
       const generatePrintContent = (billData, billPageData) => {
@@ -334,7 +330,7 @@ const ClientAdminDashboard = () => {
              <p class="text-right flex justify-end gap-1 items-center text-xs text-gray-700">
                 <span class="flex items-center gap-1">
                     <!-- Calendar Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="!h-4 !w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     ${isFormatDate(billData?.dateTime)}
