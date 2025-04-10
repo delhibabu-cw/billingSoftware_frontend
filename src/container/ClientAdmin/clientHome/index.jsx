@@ -445,12 +445,14 @@ const ClientAdminDashboard = () => {
               </tfoot>
             </table>
         
-            <!-- Footer Terms -->
             ${
               billPageData?.footer?.terms
                 ? `<p class="text-center text-xs mt-4">${billPageData?.footer?.terms}</p>`
                 : ""
             }
+            <p className="mt-2 text-[11px] text-center">
+          Billing Partner CORPWINGS IT SERVICE , 6380341944
+        </p>
           </div>
         </body>
         </html>
