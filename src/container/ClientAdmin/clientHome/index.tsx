@@ -14,7 +14,7 @@ import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScree
 import { isFormatDate, isFormatTime } from "../../../utils/helper";
 
 
-const ClientAdminDashboard = () => {
+const ClientHome = () => {
 
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(false)
@@ -36,14 +36,14 @@ const ClientAdminDashboard = () => {
 
     const productCategoryData = getProductCategoryData?.data?.data?.result || [];
 
-    const [selectedProducts, setSelectedProducts] = useState([]);
-    const [searchQueries, setSearchQueries] = useState({});
-    const [toggleStates, setToggleStates] = useState({});
+    const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
+    const [searchQueries, setSearchQueries] = useState<{ [key: number]: string }>({});
+    const [toggleStates, setToggleStates] = useState<{ [key: number]: boolean }>({});
 
     const handleProductClick = useCallback(
-        (product) => {
-            if (!selectedProducts.some((p) => p._id === product._id)) {
-                setSelectedProducts((prev) => [
+        (product: any) => {
+            if (!selectedProducts.some((p: any) => p._id === product._id)) {
+                setSelectedProducts((prev: any) => [
                     ...prev,
                     { ...product, quantitySelected: 1 },
                 ]);
@@ -52,36 +52,38 @@ const ClientAdminDashboard = () => {
         [selectedProducts]
     );
 
-    const handleRemoveClick = useCallback((productId) => {
+    const handleRemoveClick = useCallback((productId: any) => {
         setSelectedProducts(prev => prev.filter(p => p._id !== productId));
     }, []);
 
-    const handleSearchChange = (e, index) => {
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         setSearchQueries((prev) => ({
             ...prev,
             [index]: e.target.value,
         }));
     };
 
-    const handleQuantityChange = useCallback((productId, newQuantity) => {
+    const handleQuantityChange = useCallback((productId: any, newQuantity: any) => {
         setSelectedProducts(prev => prev.map(p =>
             p._id === productId ? { ...p, quantitySelected: Math.max(newQuantity, 1) } : p
         ));
     }, []);
 
-    const toggleButton = (index) => {
+    const toggleButton = (index: number) => {
         setToggleStates((prev) => ({ ...prev, [index]: !prev[index] }));
         setSearchQueries((prev) => ({ ...prev, [index]: "" }))
     };
 
+
     // 🟢 Memoizing filtered items outside map
     const filteredItemsMap = useMemo(() => {
-        const result = {};
-        productCategoryData.forEach((idx, index) => {
+        const result: { [key: number]: any[] } = {};
+        productCategoryData.forEach((idx: any, index: number) => {
             if (!searchQueries[index]) {
                 result[index] = idx?.productItems || [];
             } else {
-                result[index] = idx?.productItems?.filter((item, i) =>
+                result[index] = idx?.productItems?.filter((item: any, i: number) =>
                     item.name.toLowerCase().includes(searchQueries[index].toLowerCase()) ||
                     i + 1 === parseInt(searchQueries[index])
                 );
@@ -89,6 +91,9 @@ const ClientAdminDashboard = () => {
         });
         return result;
     }, [searchQueries, productCategoryData]);
+
+    console.log(selectedProducts);
+
 
 
     // for gst showing
@@ -106,7 +111,7 @@ const ClientAdminDashboard = () => {
     // }, [profileData]);
 
 
-    const handleToggleButton = async (title, data) => {
+    const handleToggleButton = async (title: any, data: any) => {
         try {
             setLoading(true)
 
@@ -145,7 +150,7 @@ const ClientAdminDashboard = () => {
     const totalAmount = useMemo(() => {
         if (!selectedProducts || selectedProducts.length === 0) return '0.00';
 
-        return selectedProducts.reduce((sum, product) => {
+        return selectedProducts.reduce((sum: any, product: any) => {
             const unitPrice = product?.productAddedFromStock === 'yes' ? product?.actualPrice : product?.price;
             const gstPerUnit = profileData?.overAllGstToggle === 'on' ? product?.gstAmount : 0;
 
@@ -165,177 +170,132 @@ const ClientAdminDashboard = () => {
 
     const handleCreateBill = async () => {
         try {
-          setLoading(true);
-      
-          const payload = {
-            totalAmount,
-            selectedProducts: selectedProducts?.map((idx) => {
-              const gstAmountPerUnit =
-                profileData?.overAllGstToggle === "on" ? idx.gstAmount : 0;
-              const totalGstAmount = gstAmountPerUnit * idx.quantitySelected;
-      
-              return {
-                productId: idx?._id,
-                quantity: idx?.quantitySelected,
-                name: idx?.name,
-                price: idx.price,
-                actualPrice: idx?.actualPrice,
-                profitMargin: idx?.profitMargin,
-                gstAmount: totalGstAmount,
-                gstWithoutTotal:
-                  (idx?.productAddedFromStock === "yes"
-                    ? idx?.actualPrice
-                    : idx.price) * idx.quantitySelected,
-                gstWithTotal:
-                  profileData?.overAllGstToggle === "on"
-                    ? (idx?.productAddedFromStock === "yes"
-                        ? idx?.actualPrice
-                        : idx.price + idx.gstAmount) * idx.quantitySelected
-                    : (idx?.productAddedFromStock === "yes"
-                        ? idx?.actualPrice
-                        : idx.price) * idx.quantitySelected,
-                productAddedFromStock: idx?.productAddedFromStock,
-              };
-            }),
-          };
-      
-          const postApi = await postCreateBillApi(payload);
-      
-          if (postApi?.status === 200) {
-            toast.success(postApi?.data?.msg);
-            const billPayload = {
-              billNo: postApi?.data?.result?.billNo || "N/A",
-              dateTime: postApi?.data?.result?.createdAt,
-              totalAmount: payload.totalAmount,
-              selectedProducts: payload.selectedProducts,
-              customer: postApi?.data?.result?.customer,
-              employee: postApi?.data?.result?.employee,
+            setLoading(true);
+
+            const payload = {
+                totalAmount,
+                selectedProducts: selectedProducts?.map((idx: any) => {
+                    const gstAmountPerUnit =
+                        profileData?.overAllGstToggle === "on" ? idx.gstAmount : 0;
+                    const totalGstAmount = gstAmountPerUnit * idx.quantitySelected;
+
+                    return {
+                        productId: idx?._id,
+                        quantity: idx?.quantitySelected,
+                        name: idx?.name,
+                        price: idx.price,
+                        actualPrice: idx?.actualPrice,
+                        profitMargin: idx?.profitMargin,
+                        gstAmount: totalGstAmount,
+                        gstWithoutTotal:
+                            (idx?.productAddedFromStock === "yes"
+                                ? idx?.actualPrice
+                                : idx.price) * idx.quantitySelected,
+                        gstWithTotal:
+                            profileData?.overAllGstToggle === "on"
+                                ? (idx?.productAddedFromStock === "yes"
+                                    ? idx?.actualPrice
+                                    : idx.price + idx.gstAmount) * idx.quantitySelected
+                                : (idx?.productAddedFromStock === "yes"
+                                    ? idx?.actualPrice
+                                    : idx.price) * idx.quantitySelected,
+                        productAddedFromStock: idx?.productAddedFromStock,
+                    };
+                }),
             };
-      
-            // Wait for the query to refetch with billData
-            await getBillPageData.refetch();
-      
-            // Then print
-            handlePrint(billPayload, getBillPageData?.data?.data?.result);
-      
-            setSelectedProducts([]);
-          }
+
+            const postApi = await postCreateBillApi(payload);
+
+            if (postApi?.status === 200) {
+                toast.success(postApi?.data?.msg);
+                const billPayload = {
+                    billNo: postApi?.data?.result?.billNo || "N/A",
+                    dateTime: postApi?.data?.result?.createdAt,
+                    totalAmount: payload.totalAmount,
+                    selectedProducts: payload.selectedProducts,
+                    customer: postApi?.data?.result?.customer,
+                    employee: postApi?.data?.result?.employee,
+                };
+
+                // Wait for the query to refetch with billData
+                await getBillPageData.refetch();
+
+                // Then print
+                handlePrint(billPayload, getBillPageData?.data?.data?.result);
+
+                setSelectedProducts([]);
+            }
         } catch (err) {
-          console.log(err);
+            console.log(err);
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      };
+    };
 
-    //   const handlePrint = (billData, billPageData) => {
-    //     const content = generatePrintContent(billData, billPageData);
-      
-    //     const iframe = document.createElement("iframe");
-    //     iframe.name = "print-frame";
-    //     iframe.style.position = "fixed";
-    //     iframe.style.top = "-10000px";
-    //     iframe.style.left = "-10000px";
-    //     iframe.style.width = "0px";
-    //     iframe.style.height = "0px";
-    //     iframe.style.visibility = "hidden";
-    //     document.body.appendChild(iframe);
-      
-    //     const iframeWindow = iframe.contentWindow;
-      
-    //     if (iframeWindow) {
-    //       iframeWindow.document.open();
-    //       iframeWindow.document.write(content);
-    //       iframeWindow.document.close();
-      
-    //       // ✅ Wait for iframe content to fully load
-    //       iframe.onload = () => {
-    //         setTimeout(() => {
-    //           try {
-    //             iframeWindow.focus();
-    //             iframeWindow.print();
-    //           } catch (e) {
-    //             console.error("Print failed:", e);
-    //           }
-    //           document.body.removeChild(iframe);
-    //         }, 500); // give extra time for mobile to be ready
-    //       };
-    //     }
-    //   };
-      
-      
-    // const handlePrint = (billData, billPageData) => {
-    //     const printContent = generatePrintContent(billData, billPageData);
-
-    //     const iframe = document.createElement('iframe');
-    //     iframe.style.position = 'fixed';
-    //     iframe.style.top = '-10000px';
-    //     iframe.style.left = '-10000px';
-    
-    //     document.body.appendChild(iframe);
-    
-    //     iframe.contentWindow.document.open();
-    //     iframe.contentWindow.document.write(printContent);
-    //     iframe.contentWindow.print();
-    //   };
-      
-    const handlePrint = (billData, billPageData) => {
+    const handlePrint = (billData: any, billPageData: any) => {
         const printContent = generatePrintContent(billData, billPageData);
-      
+    
         const iframe = document.createElement("iframe");
         iframe.style.position = "fixed";
         iframe.style.top = "-10000px";
         iframe.style.left = "-10000px";
         document.body.appendChild(iframe);
-      
-        const doc = iframe.contentWindow.document;
-      
+    
+        const contentWindow = iframe.contentWindow;
+        if (!contentWindow) return;
+    
+        const doc = contentWindow.document;
         doc.open();
         doc.write(printContent);
         doc.close();
-      
-        // Wait for Tailwind CSS and content to fully load
+    
         iframe.onload = () => {
-          // Delay print to ensure Tailwind styles apply
-          setTimeout(() => {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-      
-            // Optional: cleanup
-            setTimeout(() => {
-              document.body.removeChild(iframe);
-            }, 1000);
-          }, 500); // Allow time for styles to apply
+            // Attach the event listener for afterprint before triggering print
+            contentWindow.addEventListener('afterprint', () => {
+                // Refresh the page after print dialog is closed, whether canceled or completed
+                window.location.reload();
+            });
+    
+            contentWindow.focus();
+            contentWindow.print();
+    
+            // Optionally, remove the iframe after initiating print to clean up
+            document.body.removeChild(iframe);
         };
-      };
-      
-      
-      
-      const generatePrintContent = (billData, billPageData) => {
+    };
+    
+    
+
+
+
+
+
+    const generatePrintContent = (billData: any, billPageData: any) => {
         const totalPrice = billData?.selectedProducts.reduce(
-          (sum, product) =>
-            sum +
-            ((product?.productAddedFromStock === "yes"
-              ? product?.actualPrice
-              : product?.price) *
-              product.quantity || 0),
-          0
+            (sum: any, product: any) =>
+                sum +
+                ((product?.productAddedFromStock === "yes"
+                    ? product?.actualPrice
+                    : product?.price) *
+                    product.quantity || 0),
+            0
         );
-      
+
         const totalGst = billData?.selectedProducts.reduce(
-          (sum, product) => sum + (product.gstAmount || 0),
-          0
+            (sum: any, product: any) => sum + (product.gstAmount || 0),
+            0
         );
 
         const fontClass = billPageData?.font || "";
         let googleFontLink = "";
         let customFontStyle = "";
-        
+
         if (fontClass) {
-          const fontName = fontClass.replace("font-", "").replace(/\+/g, " ");
-          googleFontLink = `<link href="https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap" rel="stylesheet">`;
-          customFontStyle = `<style>.${fontClass} { font-family: '${fontName}', sans-serif; }</style>`;
+            const fontName = fontClass.replace("font-", "").replace(/\+/g, " ");
+            googleFontLink = `<link href="https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap" rel="stylesheet">`;
+            customFontStyle = `<style>.${fontClass} { font-family: '${fontName}', sans-serif; }</style>`;
         }
-        
+
         return `
         <!DOCTYPE html>
         <html lang="en">
@@ -355,7 +315,7 @@ const ClientAdminDashboard = () => {
               ${billPageData?.invoiceFields?.showInvoiceNo
                 ? `<p class="text-center">Bill No: <span class="font-semibold">${billData?.billNo}</span></p>`
                 : `<p></p>`
-              }
+            }
         
              <p class="text-right flex justify-end gap-1 items-center text-xs text-gray-700">
                 <span class="flex items-center gap-1">
@@ -388,17 +348,17 @@ const ClientAdminDashboard = () => {
                            shadow"
                   />`
                 : ""
-              }
+            }
         
               ${billPageData?.header?.businessName
                 ? `<h1 class="text-2xl font-bold text-center">${billPageData?.header?.businessName}</h1>`
                 : ""
-              }
+            }
         
               ${billPageData?.header?.address
                 ? `<p class="text-center text-sm">${billPageData?.header?.address}</p>`
                 : ""
-              }
+            }
             </div>
         
             <!-- Parties -->
@@ -410,7 +370,7 @@ const ClientAdminDashboard = () => {
                     <p>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
                   </div>`
                 : ""
-              }
+            }
         
               ${billPageData?.invoiceFields?.showEmployee
                 ? `<div>
@@ -419,7 +379,7 @@ const ClientAdminDashboard = () => {
                     <p>ID: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
                   </div>`
                 : ""
-              }
+            }
             </div>
         
             <!-- Title -->
@@ -427,8 +387,8 @@ const ClientAdminDashboard = () => {
             <h2 class="text-center font-semibold text-xl">Cash Bill</h2>
             <hr class="my-2 border-dashed border-black/80" />
         
-            <!-- Table -->
-            <table class="w-full border border-collapse text-sm mt-2 border-black/50">
+                <!-- Table -->
+            <table class="w-full border border-collapse text-xs mt-2 border-black/50">
               <thead>
                 <tr class="bg-gray-400">
                   <th class="p-1 border border-black/50">S.No</th>
@@ -439,44 +399,42 @@ const ClientAdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                ${billData?.selectedProducts?.map((item, index) => {
-                  const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
-                  const amount = price * item.quantity;
-                  return `
+                ${billData?.selectedProducts?.map((item: any, index: any) => {
+                const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
+                const amount = price * item.quantity;
+                return `
                     <tr>
                       <td class="p-1 border border-black/50 text-center">${index + 1}</td>
                       <td class="p-1 border border-black/50 text-center">${item.name}</td>
                       <td class="p-1 border border-black/50 text-center">₹ ${price.toLocaleString("en-IN")}</td>
                       <td class="p-1 border border-black/50 text-center">${item.quantity}</td>
-                      <td class="p-1 border border-black/50 text-right">₹ ${amount.toLocaleString("en-IN")}</td>
+                      <td class="p-1 border border-black/50 text-center">₹ ${amount.toLocaleString("en-IN")}</td>
                     </tr>
                   `;
-                }).join("")}
+            }).join("")}
               </tbody>
               <tfoot class="font-medium">
-                ${
-                  profileData?.overAllGstToggle === "on"
-                    ? `
+                ${profileData?.overAllGstToggle === "on"
+                ? `
                       <tr>
-                        <td colspan="4" class="p-1 border border-black/50 text-right">Sub Total</td>
-                        <td class="p-1 border text-right border-black/50">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                        <td colspan="4" class="p-1 border border-black/50 text-right pr-2">Sub Total</td>
+                        <td class="p-1 border text-center border-black/50">₹ ${totalPrice.toLocaleString("en-IN")}</td>
                       </tr>
                       <tr>
-                        <td colspan="4" class="p-1 border border-black/50 text-right">GST (${profileData?.gstPercentage}%)</td>
-                        <td class="p-1 border text-right border-black/50">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                        <td colspan="4" class="p-1 border border-black/50 text-right pr-2">GST (${profileData?.gstPercentage}%)</td>
+                        <td class="p-1 border text-center border-black/50">₹ ${totalGst.toLocaleString("en-IN")}</td>
                       </tr>
                     `
-                    : ""
-                }
+                : ""
+            }
                 <tr class="font-bold text-base">
-                  <td colspan="4" class="p-1 border border-black/50 text-right">Total</td>
-                  <td class="p-1 border text-right border-black/50">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                  <td colspan="4" class="p-1 border border-black/50 text-right pr-2">Total</td>
+                  <td class="p-1 border text-center border-black/50">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
                 </tr>
               </tfoot>
             </table>
         
-            ${
-              billPageData?.footer?.terms
+            ${billPageData?.footer?.terms
                 ? `<p class="text-center text-xs mt-4">${billPageData?.footer?.terms}</p>`
                 : ""
             }
@@ -484,8 +442,8 @@ const ClientAdminDashboard = () => {
           </div>
         </body>
         </html>
-        `;        
-      };
+        `;
+    };
 
     return (
         <>
@@ -585,7 +543,7 @@ const ClientAdminDashboard = () => {
 
                 <div className="grid grid-cols-12 gap-5 mt-5 2xl:gap-3">
                     <div className={`grid h-fit  gap-4 ${selectedProducts?.length > 0 ? "col-span-12 lg:col-span-6 xl:col-span-7 2xl:col-span-8  xl:grid-cols-2 grid-cols-1" : "col-span-12  lg:grid-cols-2 2xl:grid-cols-3 grid-cols-1 "}`}>
-                        {productCategoryData?.map((idx, index) => {
+                        {productCategoryData?.map((idx: any, index: any) => {
                             const filteredItems = filteredItemsMap[index];
 
                             return (
@@ -710,17 +668,32 @@ const ClientAdminDashboard = () => {
                                                                 </div>
                                                             </div>
                                                             <div className="flex flex-col items-end justify-center gap-[6px] !h-full">
-                                                                <button
-                                                                    onClick={() => handleProductClick(item)}
-                                                                    disabled={selectedProducts.some((p) => p._id === item._id)}
-                                                                    className={`flex items-center justify-center border rounded-md h-7 w-7 
-                                                                        ${selectedProducts.some((p) => p._id === item._id)
-                                                                            ? 'bg-gray-400 text-white cursor-not-allowed'
-                                                                            : 'bg-primaryColor text-black border-primaryColor'
-                                                                        }`}
-                                                                >
-                                                                    <MdAdd />
-                                                                </button>
+                                                                {(item?.productAddedFromStock === 'no' && item?.count === 0) ? (
+                                                                    <button
+                                                                        onClick={() => handleProductClick(item)}
+                                                                        disabled={selectedProducts.some((p) => p._id === item._id)}
+                                                                        className={`flex items-center justify-center border rounded-md h-7 w-7 
+                                                                          ${(selectedProducts.some((p) => p._id === item._id))
+                                                                                ? 'bg-gray-400 text-white cursor-not-allowed'
+                                                                                : 'bg-primaryColor text-black border-primaryColor'
+                                                                            }`}
+                                                                    >
+                                                                        <MdAdd />
+                                                                    </button>
+                                                                ) :  (item?.productAddedFromStock === 'yes' && item?.count > 0) ? (
+                                                                    <button
+                                                                        onClick={() => handleProductClick(item)}
+                                                                        disabled={selectedProducts.some((p) => p._id === item._id) || item?.count < 1}
+                                                                        className={`flex items-center justify-center border rounded-md h-7 w-7 
+                                                                          ${(selectedProducts.some((p) => p._id === item._id) || item?.count < 1)
+                                                                                ? 'bg-gray-400 text-white cursor-not-allowed'
+                                                                                : 'bg-primaryColor text-black border-primaryColor'
+                                                                            }`}
+                                                                    >
+                                                                        <MdAdd />
+                                                                    </button>
+                                                                ) : null}  {/* Hide the button if productAddedFromStock is not 'yes' or count is <= 0 */}
+
                                                                 <div className="flex items-center gap-1 px-2 py-1 border rounded-full w-fit border-white/50">
                                                                     <div className="flex text-xs text-white/70">
                                                                         <p>Total</p>
@@ -734,6 +707,7 @@ const ClientAdminDashboard = () => {
                                                                         )}</span></p>
                                                                 </div>
                                                             </div>
+
                                                         </div>
                                                     ))}
                                                 </div>
@@ -836,7 +810,8 @@ const ClientAdminDashboard = () => {
                                                             <span className="text-sm">{product.quantitySelected || 1}</span>
                                                             <button
                                                                 onClick={() => handleQuantityChange(product._id, product.quantitySelected + 1)}
-                                                                className="h-full px-2 py-[6px] text-sm font-semibold hover:bg-primaryColor hover:text-black"
+                                                                disabled={product.quantitySelected >= product.count || product.count <= 0}
+                                                                className={`h-full px-2 py-[6px] text-sm font-semibold hover:bg-primaryColor hover:text-black ${product.quantitySelected === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
                                                             >
                                                                 <FaPlus />
                                                             </button>
@@ -861,7 +836,7 @@ const ClientAdminDashboard = () => {
                                         ))}
                                     </div>
 
-                                    <div className="flex justify-between mt-4">
+                                    <div className="flex flex-wrap justify-between gap-2 mt-4">
                                         <div className="flex items-center gap-1 h-fit bg-gradient-to-b from-[#222830e2] to-[#222830d9] px-3 py-2 rounded-3xl w-fit text-white">
                                             <p className="text-white/80">Total Amount <span>:</span></p>
                                             <p className="text-lg font-bold">₹ {totalAmount}</p>
@@ -907,4 +882,4 @@ const ClientAdminDashboard = () => {
     );
 };
 
-export default ClientAdminDashboard;
+export default ClientHome;

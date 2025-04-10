@@ -174,7 +174,7 @@ const ClientStock = () => {
                             <p className="text-white capitalize ">₹ {idx?.products?.actualPrice ? idx?.products?.actualPrice : "-"}</p>
                           </td>
                           <td className="p-3">
-                            <p className="text-white capitalize ">{idx?.products?.count ? idx?.products?.count : "-"}</p>
+                            <p className="text-white capitalize ">{idx?.products?.count}</p>
                           </td>
                           {/* <td className="p-3">
                           <div className="text-white">₹ {(idx?.products?.actualPrice * idx?.products?.count).toLocaleString("en-IN")}</div>
