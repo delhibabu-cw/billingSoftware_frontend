@@ -3,7 +3,7 @@ import { getBillPageApi, getBillsApi } from '../../../api-service/client';
 import { getProfileApi } from '../../../api-service/authApi';
 import { isFormatDate, isFormatTime } from '../../../utils/helper';
 import LoaderScreen from '../../../components/animation/loaderScreen/LoaderScreen';
-import { MdAccessTime, MdDateRange } from 'react-icons/md';
+// import { MdAccessTime, MdDateRange } from 'react-icons/md';
 
 const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
 
@@ -57,44 +57,243 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
     //     }
     //   }, [billPageData]);
 
-    const handlePrint = ()=>{
-        setTimeout(() => {
-            const printContent = document.getElementById("printArea");
-            if (printContent) {
-              const originalContent = document.body.innerHTML;
-              document.body.innerHTML = printContent.innerHTML;
-              window.print();
-              document.body.innerHTML = originalContent;
-              window.location.reload(); // Reload to restore original content
-            }
-          }, 500);
-    }
+    // const handlePrint = ()=>{
+    //     setTimeout(() => {
+    //         const printContent = document.getElementById("printArea");
+    //         if (printContent) {
+    //           const originalContent = document.body.innerHTML;
+    //           document.body.innerHTML = printContent.innerHTML;
+    //           window.print();
+    //           document.body.innerHTML = originalContent;
+    //           window.location.reload(); // Reload to restore original content
+    //         }
+    //       }, 500);
+    // }
+
+    const handlePrint = (billData: any, billPageData: any) => {
+        const content = generatePrintContent(billData, billPageData);
+      
+        const iframe = document.createElement("iframe");
+        iframe.name = "print-frame";
+        iframe.style.position = "fixed";
+        iframe.style.top = "-10000px";
+        iframe.style.left = "-10000px";
+        iframe.style.width = "0px";
+        iframe.style.height = "0px";
+        iframe.style.visibility = "hidden";
+        document.body.appendChild(iframe);
+      
+        const iframeWindow = iframe.contentWindow;
+      
+        if (iframeWindow) {
+          iframeWindow.document.open();
+          iframeWindow.document.write(content);
+          iframeWindow.document.close();
+      
+          // ✅ Wait for iframe content to fully load
+          iframe.onload = () => {
+            setTimeout(() => {
+              try {
+                iframeWindow.focus();
+                iframeWindow.print();
+              } catch (e) {
+                console.error("Print failed:", e);
+              }
+              document.body.removeChild(iframe);
+              handleClose()
+            }, 500); // give extra time for mobile to be ready
+          };
+        }
+      };
+
+       const generatePrintContent = (billData: any, billPageData: any) => {
+              const totalPrice = billData?.selectedProducts.reduce(
+                (sum: any, product: any) =>
+                  sum +
+                  ((product?.productAddedFromStock === "yes"
+                    ? product?.actualPrice
+                    : product?.price) *
+                    product.quantity || 0),
+                0
+              );
+            
+              const totalGst = billData?.selectedProducts.reduce(
+                (sum: any, product: any) => sum + (product.gstAmount || 0),
+                0
+              );
+      
+              const fontClass = billPageData?.font || "";
+              let googleFontLink = "";
+              let customFontStyle = "";
+              
+              if (fontClass) {
+                const fontName = fontClass.replace("font-", "").replace(/\+/g, " ");
+                googleFontLink = `<link href="https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap" rel="stylesheet">`;
+                customFontStyle = `<style>.${fontClass} { font-family: '${fontName}', sans-serif; }</style>`;
+              }
+              
+              return `
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8" />
+                <title>Print Bill</title>
+                <script src="https://cdn.tailwindcss.com"></script>
+                ${googleFontLink}
+                ${customFontStyle}
+              </head>
+              <body>
+                <div class=" rounded-md p-0 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
+                <!-- Invoice Info -->
+                  <div class="grid grid-cols-3 gap-3 text-sm">
+                    <p class="font-bold text-lg">Invoice</p>
+              
+                    ${billPageData?.invoiceFields?.showInvoiceNo
+                      ? `<p class="text-center">Bill No: <span class="font-semibold">${billData?.billNo}</span></p>`
+                      : `<p></p>`
+                    }
+              
+                   <p class="text-right flex justify-end gap-[2px] items-center text-sm text-gray-700">
+                      <span class="flex items-center gap-1">
+                          <!-- Calendar Icon -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          ${isFormatDate(billData?.createdAt)}
+                      </span>
+                      <span className='!hidden'>|</span>
+                      <span class="flex items-center gap-1">
+                          <!-- Clock Icon -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          ${isFormatTime(billData?.createdAt)}
+                      </span>
+                      </p>
+                  </div>
+                  
+                  <!-- Header Section -->
+                  <div class="flex flex-col items-center gap-2 mt-4">
+                    ${billPageData?.header?.logo?.logo_Url
+                      ? `<img
+                          src="${billPageData?.header?.logo?.logo_Url}"
+                          alt="Logo"
+                          class="${billPageData?.header?.logo?.logoWidth || "w-36"} ${billPageData?.header?.logo?.logoHeight || "h-36"}
+                                 ${billPageData?.header?.logo?.logoCircle ? "rounded-full" : "rounded"}
+                                 ${billPageData?.header?.logoZoom ? "object-cover" : "object-fill"}
+                                 shadow"
+                        />`
+                      : ""
+                    }
+              
+                    ${billPageData?.header?.businessName
+                      ? `<h1 class="text-2xl font-bold text-center">${billPageData?.header?.businessName}</h1>`
+                      : ""
+                    }
+              
+                    ${billPageData?.header?.address
+                      ? `<p class="text-center text-sm">${billPageData?.header?.address}</p>`
+                      : ""
+                    }
+                  </div>
+              
+                  <!-- Parties -->
+                  <div class="flex justify-between mt-4 text-sm">
+                    ${profileData?.customerToggle === 'on'
+                      ? `<div>
+                          <p class="font-medium text-base">Customer Details</p>
+                          <p>Name: <span class="font-semibold">${billData?.customer?.name || ""}</span></p>
+                          <p>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
+                        </div>`
+                      : ""
+                    }
+              
+                    ${profileData?.employeeToggle === 'on'
+                      ? `<div>
+                          <p class="font-medium text-base">Employee Details</p>
+                          <p>Name: <span class="font-semibold">${billData?.employee?.fullName || ""}</span></p>
+                          <p>ID: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
+                        </div>`
+                      : ""
+                    }
+                  </div>
+              
+                  <!-- Title -->
+                  <hr class="my-2 border-dashed border-black/80" />
+                  <h2 class="text-center font-semibold text-xl">Cash Bill</h2>
+                  <hr class="my-2 border-dashed border-black/80" />
+              
+                  <!-- Table -->
+                  <table class="w-full border border-collapse text-sm mt-2">
+                    <thead>
+                      <tr class="bg-gray-100">
+                        <th class="p-2 border">S.No</th>
+                        <th class="p-2 border">Product</th>
+                        <th class="p-2 border">Price</th>
+                        <th class="p-2 border">Quantity</th>
+                        <th class="p-2 border">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${billData?.selectedProducts?.map((item:any, index:any) => {
+                        const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
+                        const amount = price * item.quantity;
+                        return `
+                          <tr>
+                            <td class="p-2 border text-center">${index + 1}</td>
+                            <td class="p-2 border">${item.name}</td>
+                            <td class="p-2 border text-center">₹ ${price.toLocaleString("en-IN")}</td>
+                            <td class="p-2 border text-center">${item.quantity}</td>
+                            <td class="p-2 border text-right">₹ ${amount.toLocaleString("en-IN")}</td>
+                          </tr>
+                        `;
+                      }).join("")}
+                    </tbody>
+                    <tfoot class="font-medium">
+                      ${
+                        profileData?.overAllGstToggle === "on"
+                          ? `
+                            <tr>
+                              <td colspan="4" class="p-2 border text-right">Sub Total</td>
+                              <td class="p-2 border text-right">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                            </tr>
+                            <tr>
+                              <td colspan="4" class="p-2 border text-right">GST (${profileData?.gstPercentage}%)</td>
+                              <td class="p-2 border text-right">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                            </tr>
+                          `
+                          : ""
+                      }
+                      <tr class="font-bold text-base">
+                        <td colspan="4" class="p-2 border text-right">Total</td>
+                        <td class="p-2 border text-right">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+              
+                  <!-- Footer Terms -->
+                  ${
+                    billPageData?.footer?.terms
+                      ? `<p class="text-center text-xs mt-4">${billPageData?.footer?.terms}</p>`
+                      : ""
+                  }
+                </div>
+              </body>
+              </html>
+              `;        
+            };
 
     return (
         <>
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-[2px] ">
                 <div className="bg-white/20 backdrop-blur-2xl  rounded-lg max-w-xl w-full flex flex-col max-h-[96%]  overflow-hidden border-[1.5px] border-white/50">
-                    {/* <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-b-white/40">
-                        <h2 className="text-lg font-semibold text-white font-Montserrat">Bill</h2>
-                        <button
-                            type="button"
-                            className="text-white/80 hover:text-primaryColor hover:scale-105"
-                            onClick={handleClose}
-                        >
-                            <span className="sr-only">Close</span>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div> */}
-                    <div id="printArea" className={`h-full p-4 border rounded-tl-md rounded-tr-md shadow-md bg-white font-OpenSans overflow-y-auto hide-scrollbar  ${billPageData?.printSize}`}>
+                    {/* <div id="printArea" className={`h-full p-1 border rounded-tl-md rounded-tr-md shadow-md bg-white  overflow-y-auto hide-scrollbar  ${billPageData?.printSize} ${billPageData?.font}`}>
                         <div className="grid grid-cols-3 gap-3">
                             <p className="text-xl font-bold ">Invoice</p>
                             {billPageData?.invoiceFields?.showInvoiceNo ? (
                                 <p className="text-sm text-center">Bill No: <span className="text-base font-semibold">{billData?.billNo}</span></p>
                             ) : (<p></p>)}
 
-                            {/* <p className="text-[12px] text-end">Date & Time: <span className="font-medium">{isFormatDate(billData?.createdAt)}</span><span className="text-[10px] ms-1">{isFormatTime(billData?.createdAt)}</span></p> */}
                             <p className="text-[12px] text-end">
                                 <span className='flex flex-wrap items-center justify-end gap-1'>
                                     <span className='flex flex-wrap items-center justify-center gap-1'><MdDateRange className='text-lg'/><span className="text-[11px] font-medium">{isFormatDate(billData?.createdAt)}</span></span>
@@ -114,10 +313,10 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                                 />
                             )}
                             {billPageData?.header?.businessName && (
-                                <p className="max-w-md mt-4 text-xl font-bold text-center md:text-2xl font-Poppins">{billPageData?.header?.businessName}</p>
+                                <p className="max-w-md mt-4 text-xl font-bold text-center md:text-2xl ">{billPageData?.header?.businessName}</p>
                             )}
                             {billPageData?.header?.address && (
-                                <p className="flex flex-wrap w-full !max-w-md mt-1 md:mt-2 font-medium text-center text-sm md:text-base font-Poppins justify-center">{billPageData?.header?.address}</p>
+                                <p className="flex flex-wrap w-full !max-w-md mt-1 md:mt-2 font-medium text-center text-sm md:text-base justify-center">{billPageData?.header?.address}</p>
                             )}
                         </div>
 
@@ -208,11 +407,141 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                             </div>
                         </div>
                         <p className="mt-2 text-[11px] text-center">Billing Partner CORPWINGS IT SERVICE , 6380341944</p>
-                    </div>
+                    </div> */}
+                <div className={`rounded-md p-1 w-full h-full ${billPageData?.printSize} ${billPageData?.font} bg-white overflow-y-scroll hide-scrollbar`}>
+            
+                  <div className="grid grid-cols-3 gap-3 text-sm">
+                    <p className="text-lg font-bold">Invoice</p>
+              
+                    {billPageData?.invoiceFields?.showInvoiceNo
+                      ? <p className="text-center">Bill No: <span className="font-semibold">{billData?.billNo}</span></p>
+                      : ``
+                    }
+              
+                   <p className="text-right flex justify-end gap-[2px] items-center text-xs text-gray-700 flex-wrap">
+                      <span className="flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          {isFormatDate(billData?.createdAt)}
+                      </span>
+                      <span className='!hidden'>|</span>
+                      <span className="flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {isFormatTime(billData?.createdAt)}
+                      </span>
+                      </p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-2 mt-4">
+                    {billPageData?.header?.logo?.logo_Url
+                      ? (<img
+                          src="${billPageData?.header?.logo?.logo_Url}"
+                          alt="Logo"
+                          className={`${billPageData?.header?.logo?.logoWidth || "w-36"} ${billPageData?.header?.logo?.logoHeight || "h-36"}
+                                 ${billPageData?.header?.logo?.logoCircle ? "rounded-full" : "rounded"}
+                                 ${billPageData?.header?.logoZoom ? "object-cover" : "object-fill"}
+                                 shadow`}
+                        />)
+                      : ""
+                    }
+              
+                    {billPageData?.header?.businessName
+                      ? <h1 className="text-xl font-bold text-center">{billPageData?.header?.businessName}</h1>
+                      : ""
+                    }
+              
+                    {billPageData?.header?.address
+                      ? <p className="text-[11px] text-center">{billPageData?.header?.address}</p>
+                      : ""
+                    }
+                  </div>
+              
+                  <div className="flex justify-between mt-4 text-sm">
+                    {profileData?.customerToggle === 'on'
+                      ? (<div>
+                          <p className="text-base font-medium">Customer Details</p>
+                          <p>Name: <span className="font-semibold">${billData?.customer?.name || ""}</span></p>
+                          <p>Mobile: <span className="font-semibold">${billData?.customer?.mobile || ""}</span></p>
+                        </div>)
+                      : ""
+                    }
+              
+                    {profileData?.employeeToggle === 'on'
+                      ? (<div>
+                          <p className="text-base font-medium">Employee Details</p>
+                          <p>Name: <span className="font-semibold">${billData?.employee?.fullName || ""}</span></p>
+                          <p>ID: <span className="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
+                        </div>)
+                      : ""
+                    }
+                  </div>
+              
+                  <hr className="my-2 border-dashed border-black/80" />
+                  <h2 className="text-xl font-semibold text-center">Cash Bill</h2>
+                  <hr className="my-2 border-dashed border-black/80" />
+              
+                  <table className="w-full mt-2 text-sm border border-collapse">
+                    <thead>
+                      <tr   className="bg-gray-100">
+                        <th className="p-2 border">S.No</th>
+                        <th className="p-2 border">Product</th>
+                        <th className="p-2 border">Price</th>
+                        <th className="p-2 border">Quantity</th>
+                        <th className="p-2 border">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {billData?.selectedProducts?.map((item:any, index:any) => {
+                        const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
+                        const amount = price * item.quantity;
+                        return `
+                          <tr>
+                            <td class="p-2 border text-center">${index + 1}</td>
+                            <td class="p-2 border">${item.name}</td>
+                            <td class="p-2 border text-center">₹ ${price.toLocaleString("en-IN")}</td>
+                            <td class="p-2 border text-center">${item.quantity}</td>
+                            <td class="p-2 border text-right">₹ ${amount.toLocaleString("en-IN")}</td>
+                          </tr>
+                        `;
+                      }).join("")}
+                    </tbody>
+                    <tfoot className="font-medium">
+                      {
+                        profileData?.overAllGstToggle === "on"
+                          ? 
+                            (<>
+                            <tr>
+                              <td colSpan={4} className="p-2 text-right border">Sub Total</td>
+                              <td className="p-2 text-right border">₹ {totalPrice.toLocaleString("en-IN")}</td>
+                            </tr>
+                            <tr>
+                              <td colSpan={4} className="p-2 text-right border">GST ({profileData?.gstPercentage}%)</td>
+                              <td className="p-2 text-right border">₹ {totalGst.toLocaleString("en-IN")}</td>
+                            </tr>
+                            </>
+                            )
+                          : ""
+                      }
+                      <tr className="text-base font-bold">
+                        <td colSpan={4} className="p-2 text-right border">Total</td>
+                        <td className="p-2 text-right border">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+              
+                  {
+                    billPageData?.footer?.terms
+                      ? <p className="mt-4 text-xs text-center">${billPageData?.footer?.terms}</p>
+                      : ""
+                  }
+                </div>
                     <div className='flex gap-2 px-4 py-3 ml-auto'>
                         <button className='px-3 py-2 bg-white rounded-md' onClick={handleClose}>Cancel</button>
                         <button className='px-3 py-2 rounded-md bg-primaryColor'
-                        onClick={()=>handlePrint()}>Print</button>
+                        onClick={()=>handlePrint(billData,billPageData)}>Print</button>
                     </div>
                 </div>
             </div>

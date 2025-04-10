@@ -10,6 +10,7 @@ import { getAuthRoleApi, postSigninApi } from "../../api-service/authApi";
 import toast from "react-hot-toast";
 import LoaderScreen from "../../components/animation/loaderScreen/LoaderScreen"
 import { useQuery } from "@tanstack/react-query";
+import bgImg from "../../assets/images/login/1746057.png"
 
 const Login = () => {
 
@@ -121,7 +122,9 @@ const Login = () => {
 
   return (
     <>
+   
       <div className=" inset-0 flex justify-center items-center !h-[100vh] bg-[#1D2125] relative">
+      <img src={bgImg} className="absolute w-full h-full" alt="" />
         <div className="absolute top-0 left-0 bg-white h-[5px] 2xl:h-[50px] w-full rounded-b-lg blur-[160px] 2xl:blur-[170px]"></div>
         <div className="absolute bottom-0 left-0 bg-white h-full w-[30px] 2xl:w-[35px] rounded-s-lg blur-[160px] 2xl:blur-[200px]"></div>
         <form onSubmit={handleSubmit(onSubmit)} className="">
