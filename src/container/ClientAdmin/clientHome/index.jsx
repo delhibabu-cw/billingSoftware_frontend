@@ -459,11 +459,11 @@ const ClientAdminDashboard = () => {
                     ? `
                       <tr>
                         <td colspan="4" class="p-1 border border-black/50 text-right">Sub Total</td>
-                        <td class="p-1 border text-right">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                        <td class="p-1 border text-right border-black/50">₹ ${totalPrice.toLocaleString("en-IN")}</td>
                       </tr>
                       <tr>
                         <td colspan="4" class="p-1 border border-black/50 text-right">GST (${profileData?.gstPercentage}%)</td>
-                        <td class="p-1 border text-right">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                        <td class="p-1 border text-right border-black/50">₹ ${totalGst.toLocaleString("en-IN")}</td>
                       </tr>
                     `
                     : ""
