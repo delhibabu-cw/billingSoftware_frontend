@@ -2,15 +2,15 @@ import ClientCategory from "../container/ClientAdmin/category";
 import ClientBillPage from "../container/ClientAdmin/clientBillPage";
 import ClientBills from "../container/ClientAdmin/clientBills";
 import ClientProfile from "../container/ClientAdmin/clientProfile";
-import ClientAdminDashboard from "../container/ClientAdmin/dashboard";
 import ClientProducts from "../container/ClientAdmin/products";
 import ClientStock from "../container/ClientAdmin/stock";
+import ClientHome from "../container/ClientAdmin/clientHome/ClientHome.jsx"
 import StockProductSingleView from "../container/ClientAdmin/stock/StockProductSingleView";
 
 export const clientAdminRoutes = [
     {
       path: 'home',
-      element: <ClientAdminDashboard />,
+      element: <ClientHome />,
     },
     {
       path: 'category',

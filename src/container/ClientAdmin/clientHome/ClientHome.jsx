@@ -14,7 +14,7 @@ import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScree
 import { isFormatDate, isFormatTime } from "../../../utils/helper";
 
 
-const ClientAdminDashboard = () => {
+const ClientHome = () => {
 
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(false)
@@ -36,14 +36,14 @@ const ClientAdminDashboard = () => {
 
     const productCategoryData = getProductCategoryData?.data?.data?.result || [];
 
-    const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
-    const [searchQueries, setSearchQueries] = useState<{ [key: number]: string }>({});
-    const [toggleStates, setToggleStates] = useState<{ [key: number]: boolean }>({});
+    const [selectedProducts, setSelectedProducts] = useState([]);
+    const [searchQueries, setSearchQueries] = useState({});
+    const [toggleStates, setToggleStates] = useState({});
 
     const handleProductClick = useCallback(
-        (product: any) => {
-            if (!selectedProducts.some((p: any) => p._id === product._id)) {
-                setSelectedProducts((prev: any) => [
+        (product) => {
+            if (!selectedProducts.some((p) => p._id === product._id)) {
+                setSelectedProducts((prev) => [
                     ...prev,
                     { ...product, quantitySelected: 1 },
                 ]);
@@ -52,36 +52,35 @@ const ClientAdminDashboard = () => {
         [selectedProducts]
     );
 
-    const handleRemoveClick = useCallback((productId: any) => {
+    const handleRemoveClick = useCallback((productId) => {
         setSelectedProducts(prev => prev.filter(p => p._id !== productId));
     }, []);
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const handleSearchChange = (e, index) => {
         setSearchQueries((prev) => ({
             ...prev,
             [index]: e.target.value,
         }));
     };
 
-    const handleQuantityChange = useCallback((productId: any, newQuantity: any) => {
+    const handleQuantityChange = useCallback((productId, newQuantity) => {
         setSelectedProducts(prev => prev.map(p =>
             p._id === productId ? { ...p, quantitySelected: Math.max(newQuantity, 1) } : p
         ));
     }, []);
 
-    const toggleButton = (index: number) => {
+    const toggleButton = (index) => {
         setToggleStates((prev) => ({ ...prev, [index]: !prev[index] }));
         setSearchQueries((prev) => ({ ...prev, [index]: "" }))
     };
 
-    // 🟢 Memoizing filtered items outside map
     const filteredItemsMap = useMemo(() => {
-        const result: { [key: number]: any[] } = {};
-        productCategoryData.forEach((idx: any, index: number) => {
+        const result = {};
+        productCategoryData.forEach((idx, index) => {
             if (!searchQueries[index]) {
                 result[index] = idx?.productItems || [];
             } else {
-                result[index] = idx?.productItems?.filter((item: any, i: number) =>
+                result[index] = idx?.productItems?.filter((item, i) =>
                     item.name.toLowerCase().includes(searchQueries[index].toLowerCase()) ||
                     i + 1 === parseInt(searchQueries[index])
                 );
@@ -108,7 +107,7 @@ const ClientAdminDashboard = () => {
     // }, [profileData]);
 
 
-    const handleToggleButton = async (title: any, data: any) => {
+    const handleToggleButton = async (title, data) => {
         try {
             setLoading(true)
 
@@ -171,7 +170,7 @@ const ClientAdminDashboard = () => {
       
           const payload = {
             totalAmount,
-            selectedProducts: selectedProducts?.map((idx: any) => {
+            selectedProducts: selectedProducts?.map((idx) => {
               const gstAmountPerUnit =
                 profileData?.overAllGstToggle === "on" ? idx.gstAmount : 0;
               const totalGstAmount = gstAmountPerUnit * idx.quantitySelected;
@@ -229,68 +228,48 @@ const ClientAdminDashboard = () => {
         }
       };
 
-      const handlePrint = (billData: any, billPageData: any) => {
+    //   const handlePrint = (billData, billPageData) => {
+    //     const printContent = generatePrintContent(billData, billPageData);
+
+    //     const iframe = document.createElement('iframe');
+    //     iframe.style.position = 'fixed';
+    //     iframe.style.top = '-10000px';
+    //     iframe.style.left = '-10000px';
+    
+    //     document.body.appendChild(iframe);
+    
+    //     iframe.contentWindow.document.open();
+    //     iframe.contentWindow.document.write(printContent);
+    //     iframe.contentWindow.print();
+    //   };
+      
+      
+      const handlePrint = (billData, billPageData) => {
         const content = generatePrintContent(billData, billPageData);
       
         const iframe = document.createElement("iframe");
-        iframe.name = "print-frame";
         iframe.style.position = "fixed";
         iframe.style.top = "-10000px";
         iframe.style.left = "-10000px";
-        iframe.style.width = "0px";
-        iframe.style.height = "0px";
-        iframe.style.visibility = "hidden";
         document.body.appendChild(iframe);
       
         const iframeWindow = iframe.contentWindow;
-      
         if (iframeWindow) {
           iframeWindow.document.open();
           iframeWindow.document.write(content);
           iframeWindow.document.close();
       
-          // ✅ Wait for iframe content to fully load
-          iframe.onload = () => {
-            setTimeout(() => {
-              try {
-                iframeWindow.focus();
-                iframeWindow.print();
-              } catch (e) {
-                console.error("Print failed:", e);
-              }
-              document.body.removeChild(iframe);
-            }, 500); // give extra time for mobile to be ready
-          };
+          setTimeout(() => {
+            iframeWindow.focus();
+            iframeWindow.print();
+            document.body.removeChild(iframe);
+          }, 800);
         }
       };
       
-      
-    //   const handlePrint = (billData: any, billPageData: any) => {
-    //     const content = generatePrintContent(billData, billPageData);
-      
-    //     const iframe = document.createElement("iframe");
-    //     iframe.style.position = "fixed";
-    //     iframe.style.top = "-10000px";
-    //     iframe.style.left = "-10000px";
-    //     document.body.appendChild(iframe);
-      
-    //     const iframeWindow = iframe.contentWindow;
-    //     if (iframeWindow) {
-    //       iframeWindow.document.open();
-    //       iframeWindow.document.write(content);
-    //       iframeWindow.document.close();
-      
-    //       setTimeout(() => {
-    //         iframeWindow.focus();
-    //         iframeWindow.print();
-    //         document.body.removeChild(iframe);
-    //       }, 800);
-    //     }
-    //   };
-      
-      const generatePrintContent = (billData: any, billPageData: any) => {
+      const generatePrintContent = (billData, billPageData) => {
         const totalPrice = billData?.selectedProducts.reduce(
-          (sum: any, product: any) =>
+          (sum, product) =>
             sum +
             ((product?.productAddedFromStock === "yes"
               ? product?.actualPrice
@@ -300,7 +279,7 @@ const ClientAdminDashboard = () => {
         );
       
         const totalGst = billData?.selectedProducts.reduce(
-          (sum: any, product: any) => sum + (product.gstAmount || 0),
+          (sum, product) => sum + (product.gstAmount || 0),
           0
         );
 
@@ -325,7 +304,7 @@ const ClientAdminDashboard = () => {
           ${customFontStyle}
         </head>
         <body>
-          <div class=" rounded-md p-3 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
+          <div class=" rounded-md p-1 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
           <!-- Invoice Info -->
             <div class="grid grid-cols-3 gap-3 text-sm">
               <p class="font-bold text-lg">Invoice</p>
@@ -417,7 +396,7 @@ const ClientAdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                ${billData?.selectedProducts?.map((item:any, index:any) => {
+                ${billData?.selectedProducts?.map((item, index) => {
                   const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
                   const amount = price * item.quantity;
                   return `
@@ -563,7 +542,7 @@ const ClientAdminDashboard = () => {
 
                 <div className="grid grid-cols-12 gap-5 mt-5 2xl:gap-3">
                     <div className={`grid h-fit  gap-4 ${selectedProducts?.length > 0 ? "col-span-12 lg:col-span-6 xl:col-span-7 2xl:col-span-8  xl:grid-cols-2 grid-cols-1" : "col-span-12  lg:grid-cols-2 2xl:grid-cols-3 grid-cols-1 "}`}>
-                        {productCategoryData?.map((idx: any, index: number) => {
+                        {productCategoryData?.map((idx, index) => {
                             const filteredItems = filteredItemsMap[index];
 
                             return (
@@ -615,7 +594,7 @@ const ClientAdminDashboard = () => {
                                             {/* Product List */}
                                             {filteredItems?.length > 0 ? (
                                                 <div className="flex flex-col gap-3 mt-2 max-h-[300px] !h-fit overflow-y-auto hide-scrollbar">
-                                                    {filteredItems.map((item: any, i: number) => (
+                                                    {filteredItems.map((item, i) => (
                                                         <div
                                                             key={i}
 
@@ -690,9 +669,9 @@ const ClientAdminDashboard = () => {
                                                             <div className="flex flex-col items-end justify-center gap-[6px] !h-full">
                                                                 <button
                                                                     onClick={() => handleProductClick(item)}
-                                                                    disabled={selectedProducts.some((p: any) => p._id === item._id)}
+                                                                    disabled={selectedProducts.some((p) => p._id === item._id)}
                                                                     className={`flex items-center justify-center border rounded-md h-7 w-7 
-                                                                        ${selectedProducts.some((p: any) => p._id === item._id)
+                                                                        ${selectedProducts.some((p) => p._id === item._id)
                                                                             ? 'bg-gray-400 text-white cursor-not-allowed'
                                                                             : 'bg-primaryColor text-black border-primaryColor'
                                                                         }`}
@@ -742,7 +721,7 @@ const ClientAdminDashboard = () => {
                                     </div>
 
                                     <div className="flex flex-col gap-3 overflow-y-scroll hide-scrollbar max-h-[75vh]">
-                                        {selectedProducts?.map((product: any, index: any) => (
+                                        {selectedProducts?.map((product, index) => (
                                             <div key={index}
                                                 className="flex items-center w-full gap-3 2xl:gap-1  bg-gradient-to-b from-[#222830e2] to-[#222830d9] backdrop-blur-xl rounded-3xl p-3 border-[1px] shadow-md"
                                                 onClick={() => handleProductClick(product)}>
@@ -885,4 +864,4 @@ const ClientAdminDashboard = () => {
     );
 };
 
-export default ClientAdminDashboard;
+export default ClientHome;
