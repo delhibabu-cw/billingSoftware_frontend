@@ -263,19 +263,49 @@ const ClientAdminDashboard = () => {
     //   };
       
       
+    // const handlePrint = (billData, billPageData) => {
+    //     const printContent = generatePrintContent(billData, billPageData);
+
+    //     const iframe = document.createElement('iframe');
+    //     iframe.style.position = 'fixed';
+    //     iframe.style.top = '-10000px';
+    //     iframe.style.left = '-10000px';
+    
+    //     document.body.appendChild(iframe);
+    
+    //     iframe.contentWindow.document.open();
+    //     iframe.contentWindow.document.write(printContent);
+    //     iframe.contentWindow.print();
+    //   };
+      
     const handlePrint = (billData, billPageData) => {
         const printContent = generatePrintContent(billData, billPageData);
-
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'fixed';
-        iframe.style.top = '-10000px';
-        iframe.style.left = '-10000px';
-    
+      
+        const iframe = document.createElement("iframe");
+        iframe.style.position = "fixed";
+        iframe.style.top = "-10000px";
+        iframe.style.left = "-10000px";
         document.body.appendChild(iframe);
-    
-        iframe.contentWindow.document.open();
-        iframe.contentWindow.document.write(printContent);
-        iframe.contentWindow.print();
+      
+        const doc = iframe.contentWindow.document;
+      
+        doc.open();
+        doc.write(printContent);
+        doc.close();
+      
+        // Wait for Tailwind CSS and content to fully load
+        iframe.onload = () => {
+          // Delay print to ensure Tailwind styles apply
+          setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+      
+            // Optional: cleanup
+            setTimeout(() => {
+              document.body.removeChild(iframe);
+            }, 1000);
+          }, 500); // Allow time for styles to apply
+        };
       };
       
       
@@ -428,19 +458,19 @@ const ClientAdminDashboard = () => {
                   profileData?.overAllGstToggle === "on"
                     ? `
                       <tr>
-                        <td colspan="4" class="p-2 border border-black/50 text-right">Sub Total</td>
-                        <td class="p-2 border text-right">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                        <td colspan="4" class="p-1 border border-black/50 text-right">Sub Total</td>
+                        <td class="p-1 border text-right">₹ ${totalPrice.toLocaleString("en-IN")}</td>
                       </tr>
                       <tr>
-                        <td colspan="4" class="p-2 border border-black/50 text-right">GST (${profileData?.gstPercentage}%)</td>
-                        <td class="p-2 border text-right">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                        <td colspan="4" class="p-1 border border-black/50 text-right">GST (${profileData?.gstPercentage}%)</td>
+                        <td class="p-1 border text-right">₹ ${totalGst.toLocaleString("en-IN")}</td>
                       </tr>
                     `
                     : ""
                 }
                 <tr class="font-bold text-base">
-                  <td colspan="4" class="p-2 border border-black/50 text-right">Total</td>
-                  <td class="p-2 border text-right border-black/50">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                  <td colspan="4" class="p-1 border border-black/50 text-right">Total</td>
+                  <td class="p-1 border text-right border-black/50">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
                 </tr>
               </tfoot>
             </table>
@@ -450,9 +480,7 @@ const ClientAdminDashboard = () => {
                 ? `<p class="text-center text-xs mt-4">${billPageData?.footer?.terms}</p>`
                 : ""
             }
-            <p className="mt-2 text-[11px] text-center">
-          Billing Partner CORPWINGS IT SERVICE , 6380341944
-        </p>
+            <p class="!mt-2 text-[11px] !text-center">Billing Partner CORPWINGS IT SERVICE , 6380341944</p>
           </div>
         </body>
         </html>
