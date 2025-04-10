@@ -122,7 +122,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                         </div>
 
                         <div className="flex justify-between mt-2">
-                            {billPageData?.invoiceFields?.showCustomer && (
+                            {profileData?.customerToggle === 'on' && (
                                 <div>
                                     <p className="text-lg font-medium">Customer Details</p>
                                     <div className="flex items-center gap-2 mt-1 text-sm">
@@ -135,7 +135,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                                     </div>
                                 </div>
                             )}
-                            {billPageData?.invoiceFields?.showEmployee && (
+                            {profileData?.employeeToggle === 'on' && (
                                 <div>
                                     <p className="text-lg font-medium">Employee Details</p>
                                     <div className="flex items-center gap-2 mt-1 text-sm">

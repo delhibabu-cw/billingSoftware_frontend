@@ -4,7 +4,7 @@ import ClientBills from "../container/ClientAdmin/clientBills";
 import ClientProfile from "../container/ClientAdmin/clientProfile";
 import ClientProducts from "../container/ClientAdmin/products";
 import ClientStock from "../container/ClientAdmin/stock";
-import ClientHome from "../container/ClientAdmin/clientHome/ClientHome.jsx"
+import ClientHome from "../container/ClientAdmin/clientHome/index.tsx"
 import StockProductSingleView from "../container/ClientAdmin/stock/StockProductSingleView";
 
 export const clientAdminRoutes = [

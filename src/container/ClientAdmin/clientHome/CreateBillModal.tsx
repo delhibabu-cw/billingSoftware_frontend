@@ -2,20 +2,18 @@ import { useQuery } from "@tanstack/react-query";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {  useForm } from "react-hook-form";
 import * as yup from 'yup';
-import { getErrorMessage, getErrorMessageArray } from "../../../utils/helper";
+import { getErrorMessage, getErrorMessageArray, isFormatDate, isFormatTime } from "../../../utils/helper";
 import { useEffect, useState } from "react";
 import { getProfileApi } from "../../../api-service/authApi";
-import { getClientUserApi, getSubRoleApi, postCreateBillApi } from "../../../api-service/client";
+import { getBillPageApi, getClientUserApi, getSubRoleApi, postCreateBillApi } from "../../../api-service/client";
 import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScreen";
 import toast from "react-hot-toast";
-import BillComponent from "../../../components/BillComponent";
 
 
 const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount, clearSelectedProducts }: any) => {
 
   console.log('totalAmount',totalAmount);
   console.log('selected products',selectedProducts);
-  const [billData, setBillData] = useState<any>(null);
   
 
   if (!openModal) return null;
@@ -122,6 +120,11 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
     value: item?._id, label: item?.fullName, fullData: item
   }))
 
+      const getBillPageData = useQuery({
+          queryKey: ["getBillPageData"],
+          queryFn: () => getBillPageApi(""),
+      });
+
 
   const onSubmit = async (data: any) => {
 
@@ -163,15 +166,22 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
       const postApi = await postCreateBillApi(payload)
       if (postApi?.status === 200) {
         toast.success(postApi?.data?.msg)
-        setBillData({
-          billNo: postApi?.data?.result?.billNo || "N/A",
-          dateTime: postApi?.data?.result?.createdAt,
-          totalAmount: payload.totalAmount,
-          selectedProducts: payload.selectedProducts,
-          employee: employeeDetails,
-          customer: payload.customer
-      });
+      
+      const billPayload = {
+        billNo: postApi?.data?.result?.billNo || "N/A",
+        dateTime: postApi?.data?.result?.createdAt,
+        totalAmount: payload.totalAmount,
+        selectedProducts: payload.selectedProducts,
+        employee: employeeDetails,
+        customer: payload.customer
+      };
+      
         // handleClose()
+        await getBillPageData.refetch();
+      
+            // Then print
+            handlePrint(billPayload, getBillPageData?.data?.data?.result);
+            
         clearSelectedProducts()
       }
 
@@ -183,6 +193,218 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
 
   }
 
+  const handlePrint = (billData: any, billPageData: any) => {
+    const content = generatePrintContent(billData, billPageData);
+  
+    const iframe = document.createElement("iframe");
+    iframe.name = "print-frame";
+    iframe.style.position = "fixed";
+    iframe.style.top = "-10000px";
+    iframe.style.left = "-10000px";
+    iframe.style.width = "0px";
+    iframe.style.height = "0px";
+    iframe.style.visibility = "hidden";
+    document.body.appendChild(iframe);
+  
+    const iframeWindow = iframe.contentWindow;
+  
+    if (iframeWindow) {
+      iframeWindow.document.open();
+      iframeWindow.document.write(content);
+      iframeWindow.document.close();
+  
+      // ✅ Wait for iframe content to fully load
+      iframe.onload = () => {
+        setTimeout(() => {
+          try {
+            iframeWindow.focus();
+            iframeWindow.print();
+          } catch (e) {
+            console.error("Print failed:", e);
+          }
+          document.body.removeChild(iframe);
+          handleClose()
+        }, 500); // give extra time for mobile to be ready
+      };
+    }
+  };
+
+      const generatePrintContent = (billData: any, billPageData: any) => {
+          const totalPrice = billData?.selectedProducts.reduce(
+            (sum: any, product: any) =>
+              sum +
+              ((product?.productAddedFromStock === "yes"
+                ? product?.actualPrice
+                : product?.price) *
+                product.quantity || 0),
+            0
+          );
+        
+          const totalGst = billData?.selectedProducts.reduce(
+            (sum: any, product: any) => sum + (product.gstAmount || 0),
+            0
+          );
+  
+          const fontClass = billPageData?.font || "";
+          let googleFontLink = "";
+          let customFontStyle = "";
+          
+          if (fontClass) {
+            const fontName = fontClass.replace("font-", "").replace(/\+/g, " ");
+            googleFontLink = `<link href="https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap" rel="stylesheet">`;
+            customFontStyle = `<style>.${fontClass} { font-family: '${fontName}', sans-serif; }</style>`;
+          }
+          
+          return `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <title>Print Bill</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            ${googleFontLink}
+            ${customFontStyle}
+          </head>
+          <body>
+            <div class=" rounded-md p-3 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
+            <!-- Invoice Info -->
+              <div class="grid grid-cols-3 gap-3 text-sm">
+                <p class="font-bold text-lg">Invoice</p>
+          
+                ${billPageData?.invoiceFields?.showInvoiceNo
+                  ? `<p class="text-center">Bill No: <span class="font-semibold">${billData?.billNo}</span></p>`
+                  : `<p></p>`
+                }
+          
+               <p class="text-right flex justify-end gap-2 items-center text-sm text-gray-700">
+                  <span class="flex items-center gap-1">
+                      <!-- Calendar Icon -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      ${isFormatDate(billData?.dateTime)}
+                  </span>
+                  |
+                  <span class="flex items-center gap-1">
+                      <!-- Clock Icon -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      ${isFormatTime(billData?.dateTime)}
+                  </span>
+                  </p>
+              </div>
+              
+              <!-- Header Section -->
+              <div class="flex flex-col items-center gap-2 mt-4">
+                ${billPageData?.header?.logo?.logo_Url
+                  ? `<img
+                      src="${billPageData?.header?.logo?.logo_Url}"
+                      alt="Logo"
+                      class="${billPageData?.header?.logo?.logoWidth || "w-36"} ${billPageData?.header?.logo?.logoHeight || "h-36"}
+                             ${billPageData?.header?.logo?.logoCircle ? "rounded-full" : "rounded"}
+                             ${billPageData?.header?.logoZoom ? "object-cover" : "object-fill"}
+                             shadow"
+                    />`
+                  : ""
+                }
+          
+                ${billPageData?.header?.businessName
+                  ? `<h1 class="text-2xl font-bold text-center">${billPageData?.header?.businessName}</h1>`
+                  : ""
+                }
+          
+                ${billPageData?.header?.address
+                  ? `<p class="text-center text-sm">${billPageData?.header?.address}</p>`
+                  : ""
+                }
+              </div>
+          
+              <!-- Parties -->
+              <div class="flex justify-between mt-4 text-sm">
+                ${profileData?.customerToggle === 'on'
+                  ? `<div>
+                      <p class="font-medium text-base">Customer Details</p>
+                      <p>Name: <span class="font-semibold">${billData?.customer?.name || ""}</span></p>
+                      <p>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
+                    </div>`
+                  : ""
+                }
+          
+                ${profileData?.employeeToggle === 'on'
+                  ? `<div>
+                      <p class="font-medium text-base">Employee Details</p>
+                      <p>Name: <span class="font-semibold">${billData?.employee?.fullName || ""}</span></p>
+                      <p>ID: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
+                    </div>`
+                  : ""
+                }
+              </div>
+          
+              <!-- Title -->
+              <hr class="my-2 border-dashed border-black/80" />
+              <h2 class="text-center font-semibold text-xl">Cash Bill</h2>
+              <hr class="my-2 border-dashed border-black/80" />
+          
+              <!-- Table -->
+              <table class="w-full border border-collapse text-sm mt-2">
+                <thead>
+                  <tr class="bg-gray-100">
+                    <th class="p-2 border">S.No</th>
+                    <th class="p-2 border">Product</th>
+                    <th class="p-2 border">Price</th>
+                    <th class="p-2 border">Quantity</th>
+                    <th class="p-2 border">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${billData?.selectedProducts?.map((item:any, index:any) => {
+                    const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
+                    const amount = price * item.quantity;
+                    return `
+                      <tr>
+                        <td class="p-2 border text-center">${index + 1}</td>
+                        <td class="p-2 border">${item.name}</td>
+                        <td class="p-2 border text-center">₹ ${price.toLocaleString("en-IN")}</td>
+                        <td class="p-2 border text-center">${item.quantity}</td>
+                        <td class="p-2 border text-right">₹ ${amount.toLocaleString("en-IN")}</td>
+                      </tr>
+                    `;
+                  }).join("")}
+                </tbody>
+                <tfoot class="font-medium">
+                  ${
+                    profileData?.overAllGstToggle === "on"
+                      ? `
+                        <tr>
+                          <td colspan="4" class="p-2 border text-right">Sub Total</td>
+                          <td class="p-2 border text-right">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="4" class="p-2 border text-right">GST (${profileData?.gstPercentage}%)</td>
+                          <td class="p-2 border text-right">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                        </tr>
+                      `
+                      : ""
+                  }
+                  <tr class="font-bold text-base">
+                    <td colspan="4" class="p-2 border text-right">Total</td>
+                    <td class="p-2 border text-right">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                  </tr>
+                </tfoot>
+              </table>
+          
+              <!-- Footer Terms -->
+              ${
+                billPageData?.footer?.terms
+                  ? `<p class="text-center text-xs mt-4">${billPageData?.footer?.terms}</p>`
+                  : ""
+              }
+            </div>
+          </body>
+          </html>
+          `;        
+        };
 
   return (
     <>
@@ -316,9 +538,7 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
                     
       {(loading || getSubRoleData.isLoading || getSubRoleData.isFetching || getClientUsersData.isLoading || getClientUsersData.isFetching) && <LoaderScreen />}
 
-      <div className="!hidden">
-            <BillComponent billData={billData} />
-        </div>
+  
     </>
   )
 }
