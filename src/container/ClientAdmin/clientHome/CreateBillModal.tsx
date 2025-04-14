@@ -10,7 +10,7 @@ import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScree
 import toast from "react-hot-toast";
 
 
-const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount, clearSelectedProducts }: any) => {
+const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount, clearSelectedProducts, refetch }: any) => {
 
   console.log('totalAmount',totalAmount);
   console.log('selected products',selectedProducts);
@@ -195,35 +195,37 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
 
   const handlePrint = (billData: any, billPageData: any) => {
     const printContent = generatePrintContent(billData, billPageData);
-
+  
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
     iframe.style.top = "-10000px";
     iframe.style.left = "-10000px";
     document.body.appendChild(iframe);
-
+  
     const contentWindow = iframe.contentWindow;
     if (!contentWindow) return;
-
+  
     const doc = contentWindow.document;
     doc.open();
     doc.write(printContent);
     doc.close();
-
+  
     iframe.onload = () => {
-        // Attach the event listener for afterprint before triggering print
-        contentWindow.addEventListener('afterprint', () => {
-            // Refresh the page after print dialog is closed, whether canceled or completed
-            window.location.reload();
-        });
-
+      setTimeout(() => {
         contentWindow.focus();
         contentWindow.print();
-
-        // Optionally, remove the iframe after initiating print to clean up
-        document.body.removeChild(iframe);
+  
+        // ✅ Immediately refetch your API after triggering print
+        refetch();
+        handleClose();
+  
+        // Optional: cleanup the iframe after a second
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      }, 500);
     };
-};
+  };
       
       const generatePrintContent = (billData:any, billPageData:any) => {
         const totalPrice = billData?.selectedProducts.reduce(

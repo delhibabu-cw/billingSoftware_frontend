@@ -289,16 +289,16 @@ const ClientHome = () => {
             contentWindow.focus();
             contentWindow.print();
       
+            // ✅ Immediately refetch your API after triggering print
+            getProductCategoryData.refetch();
+      
+            // Optional: cleanup the iframe after a second
             setTimeout(() => {
               document.body.removeChild(iframe);
             }, 1000);
-          }, 500);
-        };
+          }, 500);
+        };
       };
-
-
-
-
 
     const generatePrintContent = (billData: any, billPageData: any) => {
         const totalPrice = billData?.selectedProducts.reduce(
@@ -838,13 +838,22 @@ const ClientHome = () => {
                                                                 <FaMinus />
                                                             </button>
                                                             <span className="text-sm">{product.quantitySelected || 1}</span>
+                                                            {(product?.productAddedFromStock === 'no' && product?.count === 0) ? (
                                                             <button
+                                                                onClick={() => handleQuantityChange(product._id, product.quantitySelected + 1)}
+                                                                className={`h-full px-2 py-[6px] text-sm font-semibold hover:bg-primaryColor hover:text-black ${product.quantitySelected === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
+                                                            >
+                                                                <FaPlus />
+                                                            </button>
+                                                            ):  (product?.productAddedFromStock === 'yes' && product?.count > 0) ? (
+                                                                <button
                                                                 onClick={() => handleQuantityChange(product._id, product.quantitySelected + 1)}
                                                                 disabled={product.quantitySelected >= product.count || product.count <= 0}
                                                                 className={`h-full px-2 py-[6px] text-sm font-semibold hover:bg-primaryColor hover:text-black ${product.quantitySelected === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
                                                             >
                                                                 <FaPlus />
                                                             </button>
+                                                            ) : null}
                                                         </div>
                                                         <div className="flex items-center gap-1 px-2 py-1 rounded-full border-primaryColor w-fit bg-primaryColor">
                                                             <div className="flex text-xs text-black/80">
@@ -903,7 +912,7 @@ const ClientHome = () => {
             {(loading || getProductCategoryData?.isLoading || getProductCategoryData?.isFetching || getProfileData.isLoading || getProfileData.isFetching) && <LoaderScreen />}
 
             {openModal && <CreateBillModal openModal={openModal} handleClose={() => setOpenModal(!openModal)} totalAmount={totalAmount}
-                selectedProducts={selectedProducts} clearSelectedProducts={() => setSelectedProducts([])} />}
+                selectedProducts={selectedProducts} clearSelectedProducts={() => setSelectedProducts([])} refetch={()=>getProductCategoryData?.refetch()} />}
 
             {/* <div className="!hidden">
                 <BillComponent billData={billData} />
