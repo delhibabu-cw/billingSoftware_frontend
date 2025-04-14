@@ -232,39 +232,69 @@ const ClientHome = () => {
         }
     };
 
+    // const handlePrint = (billData: any, billPageData: any) => {
+    //     const printContent = generatePrintContent(billData, billPageData);
+      
+    //     const iframe = document.createElement("iframe");
+    //     iframe.style.position = "fixed";
+    //     iframe.style.top = "-10000px";
+    //     iframe.style.left = "-10000px";
+    //     document.body.appendChild(iframe);
+      
+    //     const contentWindow = iframe.contentWindow;
+    //     if (!contentWindow) return;
+      
+    //     const doc = contentWindow.document;
+    //     doc.open();
+    //     doc.write(printContent);
+    //     doc.close();
+      
+    //     iframe.onload = () => {
+    //       setTimeout(() => {
+    //         contentWindow.focus();
+    //         contentWindow.print();
+      
+    //         // Listen for afterprint event to refresh the page once print dialog is closed
+    //         contentWindow.addEventListener('afterprint', () => {
+    //           // Refresh the page
+    //           window.location.reload();
+    //         });
+      
+    //         setTimeout(() => {
+    //           document.body.removeChild(iframe);
+    //         }, 1000);
+    //       }, 500);
+    //     };
+    //   };
+    
     const handlePrint = (billData: any, billPageData: any) => {
         const printContent = generatePrintContent(billData, billPageData);
-    
+      
         const iframe = document.createElement("iframe");
         iframe.style.position = "fixed";
         iframe.style.top = "-10000px";
         iframe.style.left = "-10000px";
         document.body.appendChild(iframe);
-    
+      
         const contentWindow = iframe.contentWindow;
         if (!contentWindow) return;
-    
+      
         const doc = contentWindow.document;
         doc.open();
         doc.write(printContent);
         doc.close();
-    
+      
         iframe.onload = () => {
-            // Attach the event listener for afterprint before triggering print
-            contentWindow.addEventListener('afterprint', () => {
-                // Refresh the page after print dialog is closed, whether canceled or completed
-                window.location.reload();
-            });
-    
+          setTimeout(() => {
             contentWindow.focus();
             contentWindow.print();
-    
-            // Optionally, remove the iframe after initiating print to clean up
-            document.body.removeChild(iframe);
-        };
-    };
-    
-    
+      
+            setTimeout(() => {
+              document.body.removeChild(iframe);
+            }, 1000);
+          }, 500);
+        };
+      };
 
 
 

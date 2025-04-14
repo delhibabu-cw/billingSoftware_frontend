@@ -123,7 +123,7 @@ const Login = () => {
   return (
     <>
    
-      <div className=" inset-0 flex justify-center items-center h-full md:!h-[100vh] bg-[#1D2125] relative">
+      <div className=" inset-0 flex justify-center items-center h-[100vh] bg-[#1D2125] relative">
       <img src={bgImg} className="absolute object-cover w-full h-full" alt="" />
         <div className="absolute top-0 left-0 bg-white h-[5px] 2xl:h-[50px] w-full rounded-b-lg blur-[160px] 2xl:blur-[170px]"></div>
         <div className="absolute bottom-0 left-0 bg-white h-full w-[30px] 2xl:w-[35px] rounded-s-lg blur-[160px] 2xl:blur-[200px]"></div>
