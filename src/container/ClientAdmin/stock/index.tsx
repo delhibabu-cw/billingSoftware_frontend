@@ -20,7 +20,14 @@ const ClientStock = () => {
   const [stockType, setStockType] = useState('')
   const [purchaseModalId, setPurchaseModalId] = useState('')
   const getCurrentDate = () => new Date().toISOString().split('T')[0];
-  const [selectedDate, setSelectedDate] = useState<string | null>(stockEntry === 'products' ? "" : getCurrentDate());
+
+// Separate date states
+const [productSelectedDate, setProductSelectedDate] = useState<string>("");
+const [purchaseSelectedDate, setPurchaseSelectedDate] = useState<string>(getCurrentDate());
+
+const [selectedDate, setSelectedDate] = useState<string>(
+  stockEntry === 'products' ? productSelectedDate : purchaseSelectedDate
+);
 
   const [stockDates, setStockDates] = useState<{
     products: string[];
@@ -40,50 +47,56 @@ const ClientStock = () => {
   const totalPurchaseAmount = stockData?.reduce((pSum: any, idx: any) => pSum + (idx?.purchase?.totalPrice || 0), 0);
   const purchaseAmountWords = numberToWords(totalPurchaseAmount)
 
-  // ✅ Fetch product & purchase highlight dates
-  useEffect(() => {
-    const fetchDates = async () => {
-      try {
-        const res = await getStockApi('');
-        const result = res.data?.result || [];
+// Update `selectedDate` based on `stockEntry`
+useEffect(() => {
+  if (stockEntry === 'products') {
+    setSelectedDate(productSelectedDate);
+  } else if (stockEntry === 'purchase') {
+    setSelectedDate(purchaseSelectedDate);
+  }
+}, [stockEntry, productSelectedDate, purchaseSelectedDate]);
 
-        // Group and format dates per category
-        const groupedDates = {
-          products: [] as string[],
-          purchase: [] as string[],
-        };
+// Handle date change from calendar
+const handleDateChange = (date: string | null) => {
+  if (!date) return;
+  if (stockEntry === 'products') {
+    setProductSelectedDate(date);
+    setSelectedDate(date);
+  } else if (stockEntry === 'purchase') {
+    setPurchaseSelectedDate(date);
+    setSelectedDate(date);
+  }
+};
 
-        result.forEach((item: any) => {
-          const category = item.stockCategory;
-          const date = item.createdAt?.split('T')[0]; // format to YYYY-MM-DD
+// In your fetchDates logic (unchanged, keep this)
+useEffect(() => {
+  const fetchDates = async () => {
+    try {
+      const res = await getStockApi('');
+      const result = res.data?.result || [];
 
-          if (category && date) {
-            if (category === 'products') {
-              groupedDates.products.push(date);
-            } else if (category === 'purchase') {
-              groupedDates.purchase.push(date);
-            }
-          }
-        });
+      const groupedDates = {
+        products: [] as string[],
+        purchase: [] as string[],
+      };
 
-        setStockDates(groupedDates);
-      } catch (err) {
-        console.error('Error fetching highlight dates', err);
-      }
-    };
+      result.forEach((item: any) => {
+        const category = item.stockCategory;
+        const date = item.createdAt?.split('T')[0];
+        if (category && date) {
+          if (category === 'products') groupedDates.products.push(date);
+          else if (category === 'purchase') groupedDates.purchase.push(date);
+        }
+      });
 
-    fetchDates();
-  }, []);
-
-
-
-  useEffect(() => {
-    if (stockEntry === 'products') {
-      setSelectedDate("");
-    } else if (stockEntry === 'purchase') {
-      setSelectedDate(getCurrentDate());
+      setStockDates(groupedDates);
+    } catch (err) {
+      console.error('Error fetching highlight dates', err);
     }
-  }, []);
+  };
+
+  fetchDates();
+}, []);
 
   return (
     <>
@@ -94,10 +107,10 @@ const ClientStock = () => {
           <div className="flex justify-between">
             <div className="flex flex-wrap gap-4 mb-6">
               <button
-                onClick={() => { setStockEntry('products'); setSelectedDate(null); }}
+                onClick={() => { setStockEntry('products'); setProductSelectedDate(getCurrentDate()); }}
                 className={`px-3 py-1 border rounded-3xl flex gap-2 ${stockEntry === 'products' ? "bg-primaryColor border-primaryColor" : "border-primaryColor text-primaryColor hover:bg-primaryColor hover:text-black"}`}> <span>Stock Products</span></button>
               <button
-                onClick={() => { setStockEntry('purchase'); setSelectedDate(getCurrentDate()); }}
+                onClick={() => { setStockEntry('purchase'); setPurchaseSelectedDate(getCurrentDate()); }}
                 className={`px-3 py-1 border rounded-3xl flex gap-2 ${stockEntry === 'purchase' ? "bg-primaryColor border-primaryColor" : "border-primaryColor text-primaryColor hover:bg-primaryColor hover:text-black"}`}> <span>Purchase</span></button>
             </div>
             <button
@@ -126,9 +139,10 @@ const ClientStock = () => {
                 stockEntry={stockEntry}
                 stockDates={stockDates}
                 selectedDate={selectedDate ?? undefined}
-                onDateChange={(date: string | null) => {
-                  if (date) setSelectedDate(date);
-                }}
+                onDateChange={handleDateChange}
+                // onDateChange={(date: string | null) => {
+                //   if (date) setSelectedDate(date);
+                // }}
                 showAllOption={stockEntry === 'products'} // ✅ Now recognized properly
               />
             </div>

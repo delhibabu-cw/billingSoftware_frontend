@@ -127,7 +127,7 @@ const StockPurchaseCreateModal = ({ openModal, handleClose, stockType, refetch, 
                                 <p>Price</p>
                                 <p>:</p>
                             </div>
-                            <p className='font-medium text-white capitalize'>₹ {(stockData?.purchase?.price).toLocaleString('en-In')}</p>
+                            <p className='font-semibold text-white capitalize'>₹ {Number(stockData?.purchase?.price).toLocaleString('en-In')}</p>
                         </div>
                         <div className='flex gap-4 md:gap-6'>
                             <div className='flex justify-between w-32 md:w-48 text-white/80'>
@@ -141,7 +141,7 @@ const StockPurchaseCreateModal = ({ openModal, handleClose, stockType, refetch, 
                                 <p>Total Price</p>
                                 <p>:</p>
                             </div>
-                            <p className='font-medium text-white capitalize'>₹ {(stockData?.purchase?.totalPrice).toLocaleString('en-In')}</p>
+                            <p className='font-semibold text-white capitalize'>₹ {Number(stockData?.purchase?.totalPrice).toLocaleString('en-In')}</p>
                         </div>
                         <div className='flex gap-4 md:gap-6'>
                             <div className='flex justify-between w-32 md:w-48 text-white/80'>
@@ -250,7 +250,7 @@ const StockPurchaseCreateModal = ({ openModal, handleClose, stockType, refetch, 
     </div>
     </div>
 
-    {loading && <LoaderScreen/>}
+    {(getStockData?.isLoading || getStockData.isFetching || loading) && <LoaderScreen/>}
     </>
   )
 }

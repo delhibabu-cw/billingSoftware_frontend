@@ -32,6 +32,13 @@ const DatePickerWithHighlights: React.FC<DatePickerWithHighlightsProps> = ({
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
+    // ✅ Sync when parent updates selectedDate
+    useEffect(() => {
+      if (initialSelectedDate) {
+        setSelectedDate(initialSelectedDate);
+      }
+    }, [initialSelectedDate]);
+
   const highlightDates =
     stockEntry === 'products' ? stockDates.products : stockDates.purchase;
   const selectedDateObj = new Date(selectedDate);
@@ -88,7 +95,7 @@ const DatePickerWithHighlights: React.FC<DatePickerWithHighlightsProps> = ({
           onClick={() => setCalendarOpen(!calendarOpen)}
         />
 
-        {selectedDate !== getCurrentDate() && (
+        {(stockEntry === 'products' && selectedDate !== getCurrentDate()) && (
           <button
             onClick={handleReset}
             title="Reset to today"

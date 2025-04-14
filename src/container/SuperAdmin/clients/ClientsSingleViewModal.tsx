@@ -100,7 +100,7 @@ const plainPassword = useMemo(() => {
               <p>UserName</p>
               <p>:</p>
             </div>
-            <p className='font-semibold text-white capitalize'>{clientData?.userName}</p>
+            <p className='font-semibold text-white '>{clientData?.userName}</p>
           </div>
           <div className='flex gap-3'>
             <div className='flex justify-between w-40 md:w-48 text-white/80'>

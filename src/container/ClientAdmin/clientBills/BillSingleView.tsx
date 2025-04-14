@@ -130,6 +130,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
               customFontStyle = `<style>.${fontClass} { font-family: '${fontName}', sans-serif; }</style>`;
             }
             
+            
             return `
             <!DOCTYPE html>
             <html lang="en">
@@ -141,7 +142,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
               ${customFontStyle}
             </head>
             <body>
-              <div class=" rounded-md  w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
+              <div class=" rounded-md  w-full h-full ${billPageData?.printSize}">
               <!-- Invoice Info -->
                 <div class="grid grid-cols-3 gap-3 text-sm">
                   <p class="font-bold text-lg">Invoice</p>
@@ -157,7 +158,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                         <svg xmlns="http://www.w3.org/2000/svg" class="!h-4 !w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        ${isFormatDate(billData?.dateTime)}
+                        ${isFormatDate(billData?.createdAt)}
                     </span>
                     |
                     <span class="flex items-center gap-1">
@@ -165,7 +166,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        ${isFormatTime(billData?.dateTime)}
+                        ${isFormatTime(billData?.createdAt)}
                     </span>
                     </p>
                 </div>
