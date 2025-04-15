@@ -31,7 +31,7 @@ const ClientBills = () => {
   // });
 
   const totalPrice = billsData.reduce((sum: any, bill: any) =>
-    sum + bill?.selectedProducts?.reduce((pSum: any, product: any) => pSum + (product?.price * product?.quantity || 0), 0),
+    sum + bill?.selectedProducts?.reduce((pSum: any, product: any) => pSum + ((product?.productAddedFromStock === 'yes' ? product?.actualPrice : product?.price) * product?.quantity || 0), 0),
     0
   )
 

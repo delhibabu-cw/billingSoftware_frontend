@@ -849,7 +849,7 @@ const ClientHome = () => {
                                                                 <button
                                                                 onClick={() => handleQuantityChange(product._id, product.quantitySelected + 1)}
                                                                 disabled={product.quantitySelected >= product.count || product.count <= 0}
-                                                                className={`h-full px-2 py-[6px] text-sm font-semibold hover:bg-primaryColor hover:text-black ${product.quantitySelected === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
+                                                                className={`h-full px-2 py-[6px] text-sm font-semibold hover:bg-primaryColor hover:text-black ${(product.quantitySelected >= product.count || product.count <= 0) ? "opacity-50 cursor-not-allowed" : ""}`}
                                                             >
                                                                 <FaPlus />
                                                             </button>

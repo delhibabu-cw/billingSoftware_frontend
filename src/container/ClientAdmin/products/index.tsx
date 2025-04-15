@@ -234,7 +234,7 @@ const ClientProducts = () => {
                             <p>Price</p>
                             <p>:</p>
                           </div>
-                          <p className="text-white font-Poppins flex gap-[2px] text-xs md:text-base"><span>₹</span>{idx?.price}</p>
+                          <p className="text-white font-Poppins flex gap-[2px] text-xs md:text-base"><span>₹</span>{idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx?.price}</p>
                         </div>
                         {(profileData?.overAllGstToggle === 'on' && idx?.isgst) && (
                           <div className="flex items-center gap-2 px-2 py-1 border rounded-full w-fit">
@@ -278,9 +278,9 @@ const ClientProducts = () => {
                       </div>
                       <p className="text-black font-Poppins flex gap-[2px]"><span>₹</span>
                         <span>{(profileData?.overAllGstToggle === 'on' && idx?.isgst) ? (
-                          (idx?.price + idx?.gstAmount).toFixed(2)
+                          ((idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx?.price) + idx?.gstAmount).toFixed(2)
                         ) : (
-                          (idx?.price).toFixed(2)
+                          (idx?.productAddedFromStock === 'yes' ? idx?.actualPrice : idx?.price).toFixed(2)
                         )}</span></p>
                     </div>
                   </div>
