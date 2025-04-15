@@ -200,10 +200,10 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
             <div class="flex justify-between mt-4 ">
               ${profileData?.customerToggle === 'on'
                 ? `<div>
-                    <p class="font-medium !text-xs">Customer Details</p>
-                    <div className='flex flex-col gap-[2.5px]'>
-                    <p className='!text-[10px]'>Name: <span class="font-medium">${billData?.customer?.name || ""}</span></p>
-                    <p className='!text-[10px]'>Mobile: <span class="font-medium">${billData?.customer?.mobile || ""}</span></p>
+                    <p class="font-semibold !text-sm">Customer Details</p>
+                    <div className=''>
+                    <p className='!text-xs'>Name: <span class="font-semibold">${billData?.customer?.name || ""}</span></p>
+                    <p className='!text-xs'>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
                     </div>
                   </div>`
                 : ""
@@ -212,10 +212,10 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
               ${profileData?.employeeToggle === 'on'
                 ?
                 `<div>
-                    <p class="font-medium !text-xs">Employee Details</p>
+                    <p class="font-semibold !text-sm">Employee Details</p>
                     <div className='flex flex-col gap-[2.5px]'>
-                    <p className='!text-[10px]'>Name: <span class="font-medium">${billData?.employee?.fullName || ""}</span></p>
-                    <p className='!text-[10px]'>Mobile: <span class="font-medium">${billData?.employee?.unquieId || ""}</span></p>
+                    <p className='!text-xs'>Name: <span class="font-semibold">${billData?.employee?.fullName || ""}</span></p>
+                    <p className='!text-xs'>Mobile: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
                     </div>
                   </div>`
                 : ""
