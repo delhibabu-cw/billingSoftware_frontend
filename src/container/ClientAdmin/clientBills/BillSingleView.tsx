@@ -245,7 +245,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                     return `
                         <tr>
                           <td class="p-1 border border-black/50 text-center">${index + 1}</td>
-                          <td class="p-1 border border-black/50 text-center">${item.name}</td>
+                          <td class="p-1 border border-black/50 text-center !whitespace-normal">${item.name}</td>
                           <td class="p-1 border border-black/50 text-center whitespace-nowrap">₹ ${price.toLocaleString("en-IN")}</td>
                           <td class="p-1 border border-black/50 text-center">${item.quantity}</td>
                           <td class="p-1 border border-black/50 text-center whitespace-nowrap">₹ ${amount.toLocaleString("en-IN")}</td>
