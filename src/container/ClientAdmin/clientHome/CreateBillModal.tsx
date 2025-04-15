@@ -335,7 +335,7 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
                 ?
                 `<div>
                     <p class="font-semibold !text-sm">Employee Details</p>
-                    <div className='flex flex-col gap-[2.5px]'>
+                    <div className=''>
                     <p className='!text-xs'>Name: <span class="font-semibold">${billData?.employee?.fullName || ""}</span></p>
                     <p className='!text-xs'>Mobile: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
                     </div>
