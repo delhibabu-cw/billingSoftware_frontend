@@ -393,7 +393,7 @@ const ClientHome = () => {
         
             <!-- Parties -->
             <div class="flex justify-between mt-4 text-sm">
-              ${billPageData?.invoiceFields?.showCustomer
+              ${profileData?.customerToggle === 'on'
                 ? `<div>
                     <p class="font-medium text-base">Customer Details</p>
                     <div className='flex flex-col gap-1'>
@@ -404,7 +404,7 @@ const ClientHome = () => {
                 : ""
             }
         
-              ${billPageData?.invoiceFields?.showEmployee
+              ${profileData?.employeeToggle === 'on'
                 ?
                 `<div>
                     <p class="font-medium text-base">Employee Details</p>
@@ -477,7 +477,7 @@ const ClientHome = () => {
           </div>
         </body>
         </html>
-        `;
+        `; 
     };
 
     return (
