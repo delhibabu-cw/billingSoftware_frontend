@@ -142,7 +142,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
           ${customFontStyle}
         </head>
         <body>
-          <div class="!p-0 !pb-2 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
+          <div class="!p-0 !mb-5 !mt-0 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
           <!-- Invoice Info -->
             <div class="grid grid-cols-3 gap-3 text-sm">
               <p class="font-bold text-lg">Invoice</p>
@@ -158,7 +158,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                     <svg xmlns="http://www.w3.org/2000/svg" class="!h-4 !w-4 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    ${isFormatDate(billData?.dateTime)}
+                    ${isFormatDate(billData?.createdAt)}
                 </span>
                 <span className='hidden md:block'>|</span>
                 <span class="flex items-center gap-1">
@@ -166,7 +166,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    ${isFormatTime(billData?.dateTime)}
+                    ${isFormatTime(billData?.createdAt)}
                 </span>
                 </p>
             </div>
@@ -197,13 +197,13 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
             </div>
         
             <!-- Parties -->
-            <div class="flex justify-between mt-4 text-sm">
+            <div class="flex justify-between mt-4 ">
               ${profileData?.customerToggle === 'on'
                 ? `<div>
-                    <p class="font-medium text-base">Customer Details</p>
-                    <div className='flex flex-col gap-1'>
-                    <p className='text-sm'>Name: <span class="font-semibold">${billData?.customer?.name || ""}</span></p>
-                    <p className='text-sm'>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
+                    <p class="font-medium text-sm">Customer Details</p>
+                    <div className='flex flex-col gap-[2.5px]'>
+                    <p className='text-xs'>Name: <span class="font-semibold">${billData?.customer?.name || ""}</span></p>
+                    <p className='text-xs'>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
                     </div>
                   </div>`
                 : ""
@@ -213,9 +213,9 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                 ?
                 `<div>
                     <p class="font-medium text-base">Employee Details</p>
-                    <div className='flex flex-col gap-1'>
-                    <p className='text-sm'>Name: <span class="font-semibold">${billData?.employee?.fullName || ""}</span></p>
-                    <p className='text-sm'>Mobile: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
+                    <div className='flex flex-col gap-[2.5px]'>
+                    <p className='text-xs'>Name: <span class="font-semibold">${billData?.employee?.fullName || ""}</span></p>
+                    <p className='text-xs'>Mobile: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
                     </div>
                   </div>`
                 : ""
