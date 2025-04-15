@@ -337,7 +337,7 @@ const ClientHome = () => {
           ${customFontStyle}
         </head>
         <body>
-          <div class="!p-0 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
+          <div class="!p-0 !pb-2 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
           <!-- Invoice Info -->
             <div class="grid grid-cols-3 gap-3 text-sm">
               <p class="font-bold text-lg">Invoice</p>
@@ -423,14 +423,14 @@ const ClientHome = () => {
             <hr class="my-1 border-dashed border-black/80" />
         
                 <!-- Table -->
-            <table class="w-full border border-collapse text-xs mt-2 border-black/30">
+            <table class="w-full border border-collapse text-xs mt-2 border-black/50">
               <thead>
                 <tr class="bg-gray-400">
-                  <th class="p-1 border border-black/30">S.No</th>
-                  <th class="p-1 border border-black/30">Product</th>
-                  <th class="p-1 border border-black/30">Price</th>
-                  <th class="p-1 border border-black/30">Qty</th>
-                  <th class="p-1 border border-black/30">Amount</th>
+                  <th class="p-1 border border-black/50">S.No</th>
+                  <th class="p-1 border border-black/50">Product</th>
+                  <th class="p-1 border border-black/50">Price</th>
+                  <th class="p-1 border border-black/50">Qty</th>
+                  <th class="p-1 border border-black/50">Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -439,11 +439,11 @@ const ClientHome = () => {
                 const amount = price * item.quantity;
                 return `
                     <tr>
-                      <td class="p-1 border border-black/30 text-center">${index + 1}</td>
-                      <td class="p-1 border border-black/30 text-center">${item.name}</td>
-                      <td class="p-1 border border-black/30 text-center whitespace-nowrap">₹ ${price.toLocaleString("en-IN")}</td>
-                      <td class="p-1 border border-black/30 text-center">${item.quantity}</td>
-                      <td class="p-1 border border-black/30 text-center whitespace-nowrap">₹ ${amount.toLocaleString("en-IN")}</td>
+                      <td class="p-1 border border-black/50 text-center">${index + 1}</td>
+                      <td class="p-1 border border-black/50 text-center">${item.name}</td>
+                      <td class="p-1 border border-black/50 text-center whitespace-nowrap">₹ ${price.toLocaleString("en-IN")}</td>
+                      <td class="p-1 border border-black/50 text-center">${item.quantity}</td>
+                      <td class="p-1 border border-black/50 text-center whitespace-nowrap">₹ ${amount.toLocaleString("en-IN")}</td>
                     </tr>
                   `;
             }).join("")}
@@ -452,19 +452,19 @@ const ClientHome = () => {
                 ${profileData?.overAllGstToggle === "on"
                 ? `
                       <tr>
-                        <td colspan="4" class="p-1 border border-black/30 text-right pr-2">Sub Total</td>
-                        <td class="p-1 border text-center border-black/30 whitespace-nowrap">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                        <td colspan="4" class="p-1 border border-black/50 text-right pr-2">Sub Total</td>
+                        <td class="p-1 border text-center border-black/50 whitespace-nowrap">₹ ${totalPrice.toLocaleString("en-IN")}</td>
                       </tr>
                       <tr>
-                        <td colspan="4" class="p-1 border border-black/30 text-right pr-2">GST (${profileData?.gstPercentage}%)</td>
-                        <td class="p-1 border text-center border-black/30 whitespace-nowrap">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                        <td colspan="4" class="p-1 border border-black/50 text-right pr-2">GST (${profileData?.gstPercentage}%)</td>
+                        <td class="p-1 border text-center border-black/50 whitespace-nowrap">₹ ${totalGst.toLocaleString("en-IN")}</td>
                       </tr>
                     `
                 : ""
             }
                 <tr class="font-semibold text-base">
-                  <td colspan="4" class="p-1 border border-black/30 text-right pr-2">Total</td>
-                  <td class="p-1 border text-center border-black/30 whitespace-nowrap">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                  <td colspan="4" class="p-1 border border-black/50 text-right pr-2">Total</td>
+                  <td class="p-1 border text-center border-black/50 whitespace-nowrap">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
                 </tr>
               </tfoot>
             </table>
