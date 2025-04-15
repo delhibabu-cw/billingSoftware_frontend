@@ -132,154 +132,157 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
             
             
             return `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-              <meta charset="UTF-8" />
-              <title>Print Bill</title>
-              <script src="https://cdn.tailwindcss.com"></script>
-              ${googleFontLink}
-              ${customFontStyle}
-            </head>
-            <body>
-              <div class=" rounded-md  w-full h-full ${billPageData?.printSize}">
-              <!-- Invoice Info -->
-                <div class="grid grid-cols-3 gap-3 text-sm">
-                  <p class="font-bold text-lg">Invoice</p>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <title>Print Bill</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          ${googleFontLink}
+          ${customFontStyle}
+        </head>
+        <body>
+          <div class="!p-0 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
+          <!-- Invoice Info -->
+            <div class="grid grid-cols-3 gap-3 text-sm">
+              <p class="font-bold text-lg">Invoice</p>
+        
+              ${billPageData?.invoiceFields?.showInvoiceNo
+                ? `<p class="text-center">Bill No: <span class="font-semibold">${billData?.billNo}</span></p>`
+                : `<p></p>`
+            }
+        
+             <p class="text-right flex justify-end gap-1 flex-wrap items-center text-xs">
+                <span class="flex items-center gap-1">
+                    <!-- Calendar Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="!h-4 !w-4 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    ${isFormatDate(billData?.dateTime)}
+                </span>
+                <span className='hidden md:block'>|</span>
+                <span class="flex items-center gap-1">
+                    <!-- Clock Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    ${isFormatTime(billData?.dateTime)}
+                </span>
+                </p>
+            </div>
             
-                  ${billPageData?.invoiceFields?.showInvoiceNo
-                    ? `<p class="text-center">Bill No: <span class="font-semibold">${billData?.billNo}</span></p>`
-                    : `<p></p>`
-                  }
-            
-                 <p class="text-right flex justify-end gap-1 items-center text-xs text-gray-700">
-                    <span class="flex items-center gap-1">
-                        <!-- Calendar Icon -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="!h-4 !w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        ${isFormatDate(billData?.createdAt)}
-                    </span>
-                    |
-                    <span class="flex items-center gap-1">
-                        <!-- Clock Icon -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        ${isFormatTime(billData?.createdAt)}
-                    </span>
-                    </p>
-                </div>
-                
-                <!-- Header Section -->
-                <div class="flex flex-col items-center gap-2 mt-3">
-                  ${billPageData?.header?.logo?.logo_Url
-                    ? `<img
-                        src="${billPageData?.header?.logo?.logo_Url}"
-                        alt="Logo"
-                        class="${billPageData?.header?.logo?.logoWidth || "w-36"} ${billPageData?.header?.logo?.logoHeight || "h-36"}
-                               ${billPageData?.header?.logo?.logoCircle ? "rounded-full" : "rounded"}
-                               ${billPageData?.header?.logoZoom ? "object-cover" : "object-fill"}
-                               shadow"
-                      />`
-                    : ""
-                  }
-            
-                  ${billPageData?.header?.businessName
-                    ? `<h1 class="text-2xl font-bold text-center">${billPageData?.header?.businessName}</h1>`
-                    : ""
-                  }
-            
-                  ${billPageData?.header?.address
-                    ? `<p class="text-center text-sm">${billPageData?.header?.address}</p>`
-                    : ""
-                  }
-                </div>
-            
-                <!-- Parties -->
-                <div class="flex justify-between mt-4">
-                  ${profileData?.customerToggle === "on"
-                    ? `<div>
-                        <p class="font-medium text-sm">Customer Details</p>
-                        <p>Name: <span class="font-semibold text-[11px]">${billData?.customer?.name || ""}</span></p>
-                        <p>Mobile: <span class="font-semibold text-[11px]">${billData?.customer?.mobile || ""}</span></p>
-                      </div>`
-                    : ""
-                  }
-            
-                  ${profileData?.employeeToggle === "on"
-                    ? `<div>
-                        <p class="font-medium text-sm">Employee Details</p>
-                        <p>Name: <span class="font-semibold text-[11px]">${billData?.employee?.fullName || ""}</span></p>
-                        <p>ID: <span class="font-semibold text-[11px]">${billData?.employee?.unquieId || ""}</span></p>
-                      </div>`
-                    : ""
-                  }
-                </div>
-            
-                <!-- Title -->
-                <hr class="my-[6px] border-dashed border-black/80" />
-                <h2 class="text-center font-semibold text-xl">Cash Bill</h2>
-                <hr class="my-[6px] border-dashed border-black/80" />
-            
+            <!-- Header Section -->
+            <div class="flex flex-col items-center gap-2 mt-3">
+              ${billPageData?.header?.logo?.logo_Url
+                ? `<img
+                    src="${billPageData?.header?.logo?.logo_Url}"
+                    alt="Logo"
+                    class="${billPageData?.header?.logo?.logoWidth || "w-36"} ${billPageData?.header?.logo?.logoHeight || "h-36"}
+                           ${billPageData?.header?.logo?.logoCircle ? "rounded-full" : "rounded"}
+                           ${billPageData?.header?.logoZoom ? "object-cover" : "object-fill"}
+                           shadow"
+                  />`
+                : ""
+            }
+        
+              ${billPageData?.header?.businessName
+                ? `<h1 class="text-2xl font-bold text-center">${billPageData?.header?.businessName}</h1>`
+                : ""
+            }
+        
+              ${billPageData?.header?.address
+                ? `<p class="text-center text-sm">${billPageData?.header?.address}</p>`
+                : ""
+            }
+            </div>
+        
+            <!-- Parties -->
+            <div class="flex justify-between mt-4 text-sm">
+              ${billPageData?.invoiceFields?.showCustomer
+                ? `<div>
+                    <p class="font-medium text-base">Customer Details</p>
+                    <div className='flex flex-col gap-1'>
+                    <p className='text-sm'>Name: <span class="font-semibold">${billData?.customer?.name || ""}</span></p>
+                    <p className='text-sm'>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
+                    </div>
+                  </div>`
+                : ""
+            }
+        
+              ${billPageData?.invoiceFields?.showEmployee
+                ?
+                `<div>
+                    <p class="font-medium text-base">Employee Details</p>
+                    <div className='flex flex-col gap-1'>
+                    <p className='text-sm'>Name: <span class="font-semibold">${billData?.employee?.fullName || ""}</span></p>
+                    <p className='text-sm'>Mobile: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
+                    </div>
+                  </div>`
+                : ""
+            }
+            </div>
+        
+            <!-- Title -->
+            <hr class="my-1 border-dashed border-black/80" />
+            <h2 class="text-center font-semibold text-lg">Cash Bill</h2>
+            <hr class="my-1 border-dashed border-black/80" />
+        
                 <!-- Table -->
-                <table class="w-full border border-collapse text-sm mt-2 border-black/50">
-                  <thead>
-                    <tr class="bg-gray-400">
-                      <th class="p-1 border border-black/50">S.No</th>
-                      <th class="p-1 border border-black/50">Product</th>
-                      <th class="p-1 border border-black/50">Price</th>
-                      <th class="p-1 border border-black/50">Quantity</th>
-                      <th class="p-1 border border-black/50">Amount</th>
+            <table class="w-full border border-collapse text-xs mt-2 border-black/30">
+              <thead>
+                <tr class="bg-gray-400">
+                  <th class="p-1 border border-black/30">S.No</th>
+                  <th class="p-1 border border-black/30">Product</th>
+                  <th class="p-1 border border-black/30">Price</th>
+                  <th class="p-1 border border-black/30">Qty</th>
+                  <th class="p-1 border border-black/30">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${billData?.selectedProducts?.map((item: any, index: any) => {
+                const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
+                const amount = price * item.quantity;
+                return `
+                    <tr>
+                      <td class="p-1 border border-black/30 text-center">${index + 1}</td>
+                      <td class="p-1 border border-black/30 text-center">${item.name}</td>
+                      <td class="p-1 border border-black/30 text-center whitespace-nowrap">₹ ${price.toLocaleString("en-IN")}</td>
+                      <td class="p-1 border border-black/30 text-center">${item.quantity}</td>
+                      <td class="p-1 border border-black/30 text-center whitespace-nowrap">₹ ${amount.toLocaleString("en-IN")}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    ${billData?.selectedProducts?.map((item:any, index:any) => {
-                      const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
-                      const amount = price * item.quantity;
-                      return `
-                        <tr>
-                          <td class="p-1 border border-black/50 text-center">${index + 1}</td>
-                          <td class="p-1 border border-black/50 text-center">${item.name}</td>
-                          <td class="p-1 border border-black/50 text-center">₹ ${price.toLocaleString("en-IN")}</td>
-                          <td class="p-1 border border-black/50 text-center">${item.quantity}</td>
-                          <td class="p-1 border border-black/50 text-center">₹ ${amount.toLocaleString("en-IN")}</td>
-                        </tr>
-                      `;
-                    }).join("")}
-                  </tbody>
-                  <tfoot class="font-medium">
-                    ${
-                      profileData?.overAllGstToggle === "on"
-                        ? `
-                          <tr>
-                            <td colspan="4" class="p-1 border border-black/50 text-right pr-2">Sub Total</td>
-                            <td class="p-1 border text-center border-black/50">₹ ${totalPrice.toLocaleString("en-IN")}</td>
-                          </tr>
-                          <tr>
-                            <td colspan="4" class="p-1 border border-black/50 text-right pr-2">GST (${profileData?.gstPercentage}%)</td>
-                            <td class="p-1 border text-center border-black/50">₹ ${totalGst.toLocaleString("en-IN")}</td>
-                          </tr>
-                        `
-                        : ""
-                    }
-                    <tr class="font-bold text-base">
-                      <td colspan="4" class="p-1 border border-black/50 text-right pr-2">Total</td>
-                      <td class="p-1 border text-center border-black/50">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-            
-                ${
-                  billPageData?.footer?.terms
-                    ? `<p class="text-center text-xs mt-4">${billPageData?.footer?.terms}</p>`
-                    : ""
-                }
-                <p class="!mt-2 text-[11px] !text-center">Billing Partner CORPWINGS IT SERVICE , 6380341944</p>
-              </div>
-            </body>
-            </html>
-            `;        
+                  `;
+            }).join("")}
+              </tbody>
+              <tfoot class="font-medium">
+                ${profileData?.overAllGstToggle === "on"
+                ? `
+                      <tr>
+                        <td colspan="4" class="p-1 border border-black/30 text-right pr-2">Sub Total</td>
+                        <td class="p-1 border text-center border-black/30">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="4" class="p-1 border border-black/30 text-right pr-2">GST (${profileData?.gstPercentage}%)</td>
+                        <td class="p-1 border text-center border-black/30">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                      </tr>
+                    `
+                : ""
+            }
+                <tr class="font-semibold text-base">
+                  <td colspan="4" class="p-1 border border-black/30 text-right pr-2">Total</td>
+                  <td class="p-1 border text-center border-black/30">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                </tr>
+              </tfoot>
+            </table>
+        
+            ${billPageData?.footer?.terms
+                ? `<p class="text-center text-xs mt-4">${billPageData?.footer?.terms}</p>`
+                : ""
+            }
+            <p class="!my-2 text-[11px] !text-center">Billing Partner CORPWINGS IT SERVICE , 6380341944</p>
+          </div>
+        </body>
+        </html>
+        `;      
           };
 
     return (
