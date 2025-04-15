@@ -380,18 +380,18 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
                 ? `
                       <tr>
                         <td colspan="4" class="p-1 border border-black/30 text-right pr-2">Sub Total</td>
-                        <td class="p-1 border text-center border-black/30">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                        <td class="p-1 border text-center border-black/30 whitespace-nowrap">₹ ${totalPrice.toLocaleString("en-IN")}</td>
                       </tr>
                       <tr>
                         <td colspan="4" class="p-1 border border-black/30 text-right pr-2">GST (${profileData?.gstPercentage}%)</td>
-                        <td class="p-1 border text-center border-black/30">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                        <td class="p-1 border text-center border-black/30 whitespace-nowrap">₹ ${totalGst.toLocaleString("en-IN")}</td>
                       </tr>
                     `
                 : ""
             }
                 <tr class="font-semibold text-base">
                   <td colspan="4" class="p-1 border border-black/30 text-right pr-2">Total</td>
-                  <td class="p-1 border text-center border-black/30">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                  <td class="p-1 border text-center border-black/30 whitespace-nowrap">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
                 </tr>
               </tfoot>
             </table>
