@@ -145,7 +145,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
           <div class="!p-0 !mb-5 !mt-0 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
           <!-- Invoice Info -->
             <div class="grid grid-cols-3 gap-3 text-sm">
-              <p class="font-bold text-lg">Invoice</p>
+              <p class="font-bold">Invoice</p>
         
               ${billPageData?.invoiceFields?.showInvoiceNo
                 ? `<p class="text-center">Bill No: <span class="font-semibold">${billData?.billNo}</span></p>`
@@ -155,15 +155,14 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
              <p class="text-right flex justify-end gap-1 flex-wrap items-center text-xs">
                 <span class="flex items-center gap-1">
                     <!-- Calendar Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="!h-4 !w-4 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="!h-3 !w-3 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     ${isFormatDate(billData?.createdAt)}
                 </span>
-                <span className='hidden md:block'>|</span>
                 <span class="flex items-center gap-1">
                     <!-- Clock Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     ${isFormatTime(billData?.createdAt)}
@@ -195,27 +194,36 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                 : ""
             }
             </div>
+            ${billPageData?.header?.address
+              ? `<div class='flex gap-1 justify-center items-center mt-1'>
+                  <!-- Phone Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V8a1 1 0 01-.293.707L8.414 10.414a16.016 16.016 0 007.172 7.172l1.707-1.707a1 1 0 01.707-.293h1.586a1 1 0 011 1v2.586a2 2 0 01-2 2A17 17 0 013 5z" />
+                  </svg>
+                  <p class="text-sm">${billPageData?.header?.contact}</p>
+              </div>`
+              : ""
+          }
         
             <!-- Parties -->
             <div class="flex justify-between mt-4 ">
-              ${profileData?.customerToggle === 'on'
-                ? `<div>
-                    <p class="font-semibold !text-sm">Customer Details</p>
-                    <div className=''>
-                    <p className='!text-xs'>Name: <span class="font-semibold">${billData?.customer?.name || ""}</span></p>
-                    <p className='!text-xs'>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
+              ${billData?.customer?.name
+                ?  `<div>
+                    <p class="font-semibold !text-xs">Customer Details</p>
+                    <div class=''>
+                    <p class='!text-[10px]'>Name: <span class="font-semibold">${billData?.customer?.name?.length > 10 ? billData?.customer?.name?.slice(0,10)+'..' : billData?.customer?.name || ""}</span></p>
+                    <p class='!text-[10px]'>Mobile: <span class="font-semibold">${billData?.customer?.mobile || ""}</span></p>
                     </div>
                   </div>`
                 : ""
             }
         
-              ${profileData?.employeeToggle === 'on'
+              ${billData?.employee?.unquieId
                 ?
                 `<div>
-                    <p class="font-semibold !text-sm">Employee Details</p>
+                    <p class="font-semibold !text-xs">Employee Details</p>
                     <div className=''>
-                    <p className='!text-xs'>Name: <span class="font-semibold">${billData?.employee?.fullName || ""}</span></p>
-                    <p className='!text-xs'>Mobile: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
+                    <p class='!text-[10px]'>Id: <span class="font-semibold">${billData?.employee?.unquieId || ""}</span></p>
                     </div>
                   </div>`
                 : ""
@@ -223,12 +231,12 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
             </div>
         
             <!-- Title -->
-            <hr class="my-1 border-dashed border-black/80" />
+            <hr class="my-[3px] border-dashed border-black/80" />
             <h2 class="text-center font-semibold text-lg">Cash Bill</h2>
-            <hr class="my-1 border-dashed border-black/80" />
+            <hr class="my-[3px] border-dashed border-black/80" />
         
                 <!-- Table -->
-            <table class="w-full border border-collapse text-xs mt-2 border-black/50">
+            <table class="w-[98%] border border-collapse text-xs mt-2 border-black/50 mx-auto">
               <thead>
                 <tr class="bg-gray-400">
                   <th class="p-1 border border-black/50">S.No</th>
@@ -245,31 +253,31 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                 return `
                     <tr>
                       <td class="p-1 border border-black/50 text-center">${index + 1}</td>
-                      <td class="p-1 border border-black/50 text-center !whitespace-normal">${item.name}</td>
+                      <td class="p-1 border border-black/50 capitalize !whitespace-normal">${item.name}</td>
                       <td class="p-1 border border-black/50 text-center whitespace-nowrap">₹ ${price.toLocaleString("en-IN")}</td>
                       <td class="p-1 border border-black/50 text-center">${item.quantity}</td>
                       <td class="p-1 border border-black/50 text-center whitespace-nowrap">₹ ${amount.toLocaleString("en-IN")}</td>
                     </tr>
-                  `;
+                 `;
             }).join("")}
               </tbody>
               <tfoot class="font-medium">
-                ${profileData?.overAllGstToggle === "on"
+              ${billData?.selectedProducts.some((item:any) => item.gstAmount > 0) 
                 ? `
-                      <tr>
-                        <td colspan="4" class="p-1 border border-black/50 text-right pr-2">Sub Total</td>
-                        <td class="p-1 border text-center border-black/50 whitespace-nowrap">₹ ${totalPrice.toLocaleString("en-IN")}</td>
-                      </tr>
-                      <tr>
-                        <td colspan="4" class="p-1 border border-black/50 text-right pr-2">GST (${profileData?.gstPercentage}%)</td>
-                        <td class="p-1 border text-center border-black/50 whitespace-nowrap">₹ ${totalGst.toLocaleString("en-IN")}</td>
-                      </tr>
-                    `
+                    <tr>
+                        <td colspan="4" class=" border border-black/50 p-1">Sub Total</td>
+                        <td class=" border text-center border-black/50 p-1 whitespace-nowrap">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class=" border border-black/50 p-1">GST (${profileData?.gstPercentage}%)</td>
+                        <td class=" border text-center border-black/50 p-1 whitespace-nowrap">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                    </tr>
+                `
                 : ""
             }
-                <tr class="font-semibold text-base">
-                  <td colspan="4" class="p-1 border border-black/50 text-right pr-2">Total</td>
-                  <td class="p-1 border text-center border-black/50 whitespace-nowrap">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                <tr class="font-semibold text-sm">
+                  <td colspan="4" class=" border border-black/50 p-1">Total</td>
+                  <td class=" border text-center border-black/50 p-1 whitespace-nowrap">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
                 </tr>
               </tfoot>
             </table>
@@ -323,7 +331,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                         </div>
 
                         <div className="flex justify-between mt-2">
-                            {profileData?.customerToggle === 'on' && (
+                            {billData?.customer?.name && (
                                 <div>
                                     <p className="text-lg font-medium">Customer Details</p>
                                     <div className="flex items-center gap-2 mt-1 text-sm">
@@ -336,13 +344,9 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                                     </div>
                                 </div>
                             )}
-                            {profileData?.employeeToggle === 'on' && (
+                            {billData?.employee?.unquieId && (
                                 <div>
                                     <p className="text-lg font-medium">Employee Details</p>
-                                    <div className="flex items-center gap-2 mt-1 text-sm">
-                                        <p>Name :</p>
-                                        <p className="font-medium capitalize">{billData?.employee?.fullName ? billData?.employee?.fullName : ''}</p>
-                                    </div>
                                     <div className="flex items-center gap-2 mt-[2px] text-sm">
                                         <p>ID :</p>
                                         <p className="font-medium ">{billData?.employee?.unquieId ? billData?.employee?.unquieId : ""}</p>
@@ -377,11 +381,11 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                             </tbody>
 
                             <tfoot>
-                                {profileData?.overAllGstToggle === 'on' && (
+                                {billData?.selectedProducts.some((item:any) => item.gstAmount > 0) && (
                                     <>
                                         <tr className="">
                                             <td className="p-2 text-sm font-medium border" colSpan={4}>Sub Total</td>
-                                            <td className="p-2 text-sm font-medium border" colSpan={1}>₹{totalPrice}</td>
+                                            <td className="p-2 text-sm font-medium border" colSpan={1}>₹ {totalPrice}</td>
                                         </tr>
                                         <tr className="">
                                             <td className="p-2 text-sm font-medium border" colSpan={4}>GST({profileData?.gstPercentage}%)</td>

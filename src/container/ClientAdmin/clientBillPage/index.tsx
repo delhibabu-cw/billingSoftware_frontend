@@ -4,7 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import * as yup from 'yup';
 import { getErrorMessage } from "../../../utils/helper";
-import { BsEye } from "react-icons/bs";
+import { BsEye, BsFillPhoneVibrateFill } from "react-icons/bs";
 import { BiUpload, BiXCircle } from "react-icons/bi";
 import DocumentViewer from "../../../components/documentViewer";
 import toast from "react-hot-toast";
@@ -42,6 +42,7 @@ const ClientBillPage = () => {
     logoWidth: yup.string().default(''),
     logoHeight: yup.string().default(''),
     address: yup.string().default(''),
+    contact: yup.string().default(''),
     showInvoiceNo: yup.boolean().default(false),
     signature: yup.string().default(''),
     terms: yup.string().default(''),
@@ -68,6 +69,7 @@ const ClientBillPage = () => {
   const watchSignature = watch('signature')
   const watchTerms = watch('terms')
   const watchFont = watch('font')
+  const watchContact = watch('contact')
 
   const handleSingleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>, title: any) => {
     const file = e.target.files?.[0]; // Get the first selected file
@@ -132,6 +134,7 @@ const ClientBillPage = () => {
       header : {
         businessName : data?.title,
         address : data?.address,
+        contact : data?.contact,
         logo : {
           logo_Url : data?.logo_Url,
           logoCircle : data?.logoCircle,
@@ -180,6 +183,7 @@ const ClientBillPage = () => {
     if(billPageData){
       setValue('title', billPageData?.header?.businessName)
       setValue('address', billPageData?.header?.address)
+      setValue('contact', billPageData?.header?.contact)
       setValue('logo_Url', billPageData?.header?.logo.logo_Url)
       setValue('logoCircle', billPageData?.header?.logo.logoCircle)
       setValue('logoZoom', billPageData?.header?.logo.logoZoom)
@@ -223,6 +227,25 @@ const ClientBillPage = () => {
                     {...register('address')}
                   />
                   {errors.address && <p className="mt-1 text-xs font-medium text-primaryColor">{getErrorMessage(errors.address)}</p>}
+                </div>
+                <div className="col-span-12 lg:col-span-6">
+                  <p className="mb-1 text-white/80 ">Contact</p>
+                  <input type="text"
+                    placeholder="Enter Contact No"
+                    className=" rounded-md px-3 py-[6px]  w-full bg-white/10 backdrop-blur-md outline-none placeholder:text-white/90 placeholder:text-sm border-[1.5px] border-white/40 text-white"
+                    {...register('contact')}
+                    onInput={(e) => {
+                      const input = e.currentTarget.value;
+                      const cleanedInput = input.replace(/\D/g, '');
+                      if (/^[6-9][0-9]{0,9}$/.test(cleanedInput)) {
+                        e.currentTarget.value = cleanedInput;
+                      } else {
+                        e.currentTarget.value = cleanedInput.slice(0, -1);
+                      }
+                    }}
+                    maxLength={10}
+                  />
+                  {errors.contact && <p className="mt-1 text-xs font-medium text-primaryColor">{getErrorMessage(errors.contact)}</p>}
                 </div>
                 <div className="flex flex-col col-span-12 gap-2 p-3 rounded-md bg-white/10 backdrop-blur-lg h-fit">
                   <p className="w-fit text-white/80">Logo</p>
@@ -517,6 +540,9 @@ const ClientBillPage = () => {
             )}
             {watchAddress && (
               <p className="flex flex-wrap w-full !max-w-md mt-2 font-medium text-sm justify-center md:text-base text-center ">{watchAddress}</p>
+            )}
+            {watchContact && (
+              <p className="flex flex-wrap w-full !max-w-md  font-medium text-sm justify-center md:text-base text-center items-center gap-1"><BsFillPhoneVibrateFill />{watchContact}</p>
             )}
           </div>
 
