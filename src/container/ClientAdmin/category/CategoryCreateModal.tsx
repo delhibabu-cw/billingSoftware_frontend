@@ -29,7 +29,7 @@ const CategoryCreateModal = ({ openModal, handleClose, refetch, modalId, modalTy
 
     const schema = yup.object({
         name: yup.string().required('This Field is Required.'),
-        img_url: yup.string().required('This Field is Required.'),
+        img_url: yup.string().optional(),
         description: yup.string().optional(),
     })
 
@@ -160,7 +160,7 @@ const CategoryCreateModal = ({ openModal, handleClose, refetch, modalId, modalTy
                                 {errors.description && <p className="mt-1 text-xs font-medium text-primaryColor">{getErrorMessage(errors.description)}</p>}
                             </div>
                             <div className="col-span-12 md:col-span-6">
-                                <label htmlFor="contact-lead-score" className="mb-1 text-white/80 font-OpenSans">Category Image <span className="text-primaryColor">*</span></label>
+                                <label htmlFor="contact-lead-score" className="mb-1 text-white/80 font-OpenSans">Category Image</label>
                                 <div className="min-h-fit border-dashed border-primaryColor border-[2px] !border-spacing-10 rounded-md flex justify-center items-center mt-2 py-6">
                                     {watchResume ? (
                                         <div className="flex flex-wrap justify-center gap-3 overflow-hidden">

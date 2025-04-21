@@ -9,7 +9,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import * as yup from 'yup';
 import toast from "react-hot-toast"
-
+import NoImg from "../../../assets/images/noDataFound/noImage.jpg"
 
 const StockProductSingleView = () => {
 
@@ -85,7 +85,7 @@ const StockProductSingleView = () => {
                 </div>
                 <div className="p-3 md:p-4 bg-white/10 rounded-3xl">
                     <div className="flex flex-col gap-3 lg:gap-8 lg:flex-row ">
-                        <img src={stockData?.products?.img_url} className="rounded-md w-28 h-28" alt="" />
+                        <img src={stockData?.products?.img_url ? stockData?.products?.img_url : NoImg} className="rounded-md w-28 h-28" alt="" />
                         <div className="flex flex-col justify-center gap-2">
                             <div className="flex gap-3 w-fit ">
                                 <div className="flex justify-between xl:w-36 text-white/80">

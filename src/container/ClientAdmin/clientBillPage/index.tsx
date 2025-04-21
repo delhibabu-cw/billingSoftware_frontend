@@ -48,6 +48,7 @@ const ClientBillPage = () => {
     terms: yup.string().default(''),
     printSize: yup.string().required('This Field is required.'),
     font: yup.string().optional(),
+    showTable: yup.string().optional(),
   });
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
@@ -70,6 +71,7 @@ const ClientBillPage = () => {
   const watchTerms = watch('terms')
   const watchFont = watch('font')
   const watchContact = watch('contact')
+  const watchShowTable = watch('showTable')
 
   const handleSingleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>, title: any) => {
     const file = e.target.files?.[0]; // Get the first selected file
@@ -151,7 +153,8 @@ const ClientBillPage = () => {
           terms : data?.terms
         },
         printSize : data?.printSize,
-        font : data?.font
+        font : data?.font,
+        showTable : data?.showTable
     }
 
     // console.log(payload);
@@ -195,6 +198,7 @@ const ClientBillPage = () => {
       setValue('terms', billPageData?.footer?.terms)
       setValue('printSize', billPageData?.printSize)
       setValue('font', billPageData?.font)
+      setValue('showTable', billPageData?.showTable)
     }
   },[billPageData, setValue])
 
@@ -320,6 +324,8 @@ const ClientBillPage = () => {
                       )}
                     </div>
                     <div className="flex flex-col gap-2">
+                      <div>
+                      <p className="mb-1 text-white/80 ">Logo Width</p>
                       <div className="relative overflow-hidden">
                         <select
                           {...register("logoWidth")}
@@ -328,6 +334,8 @@ const ClientBillPage = () => {
                           defaultValue=""
                         >
                           <option value="" disabled hidden>Choose Logo Width</option>
+                          <option className="bg-gray-400 text-white/80" value="w-[50px]">50</option>
+                          <option className="bg-gray-400 text-white/80" value="w-[100px]">100</option>
                           <option className="bg-gray-400 text-white/80" value="w-[150px]">150</option>
                           <option className="bg-gray-400 text-white/80" value="w-[200px]">200</option>
                           <option className="bg-gray-400 text-white/80" value="w-[250px]">250</option>
@@ -341,6 +349,7 @@ const ClientBillPage = () => {
                           ▼
                         </div>
                       </div>
+                      </div>
                       <div className="relative overflow-hidden">
                         <select
                           {...register("logoHeight")}
@@ -349,6 +358,9 @@ const ClientBillPage = () => {
                           defaultValue=""
                         >
                           <option value="" disabled hidden>Choose Logo Height</option>
+                          <option className="bg-gray-400 text-white/80" value="h-[50px]">50</option>
+                          <option className="bg-gray-400 text-white/80" value="h-[100px]">100</option>
+                          <option className="bg-gray-400 text-white/80" value="h-[120px]">120</option>
                           <option className="bg-gray-400 text-white/80" value="h-[144px]">144</option>
                           <option className="bg-gray-400 text-white/80" value="h-[160px]">160</option>
                           <option className="bg-gray-400 text-white/80" value="h-[176px]">176</option>
@@ -383,10 +395,14 @@ const ClientBillPage = () => {
                   <input type="checkbox" className=""
                     {...register('showInvoiceNo')} /> Show BillNo
                 </label>
+                <label className="w-full col-span-6  bg-white/10 backdrop-blur-md rounded-md px-3 py-[6px] text-white/80 cursor-pointer">
+                  <input type="checkbox" className=""
+                    {...register('showTable')} /> Show Table
+                </label>
               </div>
             </div>
             <div className="col-span-12 p-3 rounded-md bg-white/15 backdrop-blur-lg h-fit">
-              <p className="px-2 py-1 bg-primaryColor w-fit rounded-3xl">Invoice Details</p>
+              <p className="px-2 py-1 bg-primaryColor w-fit rounded-3xl">Footer Details</p>
               <div className="grid grid-cols-12 gap-3 mt-2 ">
                 <div className="col-span-12 lg:col-span-6">
                   <p className="mb-1 text-white/80 ">Terms</p>
@@ -578,24 +594,24 @@ const ClientBillPage = () => {
           <hr className="mt-2 border border-collapse border-dashed border-black/80 border-x-8" />
           <p className="py-1 text-xl font-semibold text-center">Bill</p>
           <hr className="mb-2 border border-collapse border-dashed border-black/80 border-x-8" />
-          <table className="w-full mt-4 border border-collapse">
+          <table className={`w-full mt-4  ${watchShowTable ? "border border-black" : "border-none"}`}>
             <thead>
               <tr className="bg-gray-200">
-                <th className="p-2 border">S.No</th>
-                <th className="p-2 border">Product</th>
-                <th className="p-2 border">Price</th>
-                <th className="p-2 border">Quantity</th>
-                <th className="p-2 border">Amount</th>
+                <th className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>S.No</th>
+                <th className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>Product</th>
+                <th className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>Price</th>
+                <th className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>Quantity</th>
+                <th className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {/* {billData?.selectedProducts?.map((item: any, index: any) => ( */}
               <tr >
-                <td className="p-2 border">1.</td>
-                <td className="p-2 border">sample</td>
-                <td className="p-2 border">1</td>
-                <td className="p-2 border">0</td>
-                <td className="p-2 border">0</td>
+                <td className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>1.</td>
+                <td className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>sample</td>
+                <td className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>1</td>
+                <td className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>0</td>
+                <td className={`p-2 ${watchShowTable ? "border border-black" : "border-none"}"`}>0</td>
               </tr>
               {/* ))} */}
             </tbody>
@@ -604,18 +620,18 @@ const ClientBillPage = () => {
               {profileData?.overAllGstToggle === 'on' && (
                 <>
                   <tr className="">
-                    <td className="p-2 text-sm font-medium border" colSpan={4}>Sub Total</td>
-                    <td className="p-2 text-sm font-medium border" colSpan={1}>₹ 0</td>
+                    <td className={`p-2 text-sm font-medium ${watchShowTable ? "border border-black" : "border-none"}"`} colSpan={4}>Sub Total</td>
+                    <td className={`p-2 text-sm font-medium ${watchShowTable ? "border border-black" : "border-none"}"`} colSpan={1}>₹ 0</td>
                   </tr>
                   <tr className="">
-                    <td className="p-2 text-sm font-medium border" colSpan={4}>GST(0%)</td>
-                    <td className="p-2 text-sm font-medium border" colSpan={1}>₹ 0</td>
+                    <td className={`p-2 text-sm font-medium ${watchShowTable ? "border border-black" : "border-none"}"`} colSpan={4}>GST(0%)</td>
+                    <td className={`p-2 text-sm font-medium ${watchShowTable ? "border border-black" : "border-none"}"`} colSpan={1}>₹ 0</td>
                   </tr>
                 </>
               )}
               <tr className="">
-                <td className="p-2 text-sm font-semibold border" colSpan={4}>Total</td>
-                <td className="p-2 text-sm font-bold border" colSpan={1}>₹ 0</td>
+                <td className={`p-2 text-sm font-semibold ${watchShowTable ? "border border-black" : "border-none"}"`} colSpan={4}>Total</td>
+                <td className={`p-2 text-sm font-bold ${watchShowTable ? "border border-black" : "border-none"}"`} colSpan={1}>₹ 0</td>
               </tr>
             </tfoot>
 

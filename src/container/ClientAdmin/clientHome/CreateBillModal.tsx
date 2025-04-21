@@ -353,53 +353,53 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
             </div>
         
             <!-- Title -->
-            <hr class="my-1 border-dashed border-black/80" />
+            ${billPageData?.showTable ? `<hr class="my-1 border-dashed border-black/80" />` : ``}
             <h2 class="text-center font-semibold text-lg">Cash Bill</h2>
-            <hr class="my-1 border-dashed border-black/80" />
+            <hr class=" ${billPageData?.showTable ? `` : 'my-[3px]'} border-dashed border-black/80" />
         
                 <!-- Table -->
-            <table class="w-[98%] border border-collapse text-xs mx-auto mt-2 border-black/50">
+          <table class="w-[98%] ${billPageData?.showTable ? "border-black/50 border border-collapse" : "border-none"} text-xs mx-auto ${billPageData?.showTable ? `mt-2` : ''}">
               <thead>
-                <tr class="bg-gray-400">
-                  <th class="p-1 border border-black/50">S.No</th>
-                  <th class="p-1 border border-black/50">Product</th>
-                  <th class="p-1 border border-black/50">Price</th>
-                  <th class="p-1 border border-black/50">Qty</th>
-                  <th class="p-1 border border-black/50">Amount</th>
+                <tr class="bg-gray-400 ${billPageData?.showTable ? "border-black/50 border" : "border-b border-dashed border-black"}">
+                  <th class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">S.No</th>
+                  <th class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">Name</th>
+                  <th class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">Price</th>
+                  <th class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">Qty</th>
+                  <th class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">Amount</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="${billPageData?.showTable ? "border-black/50 border" : "border-b border-dashed border-black"}">
                 ${billData?.selectedProducts?.map((item: any, index: any) => {
                 const price = item.productAddedFromStock === "yes" ? item.actualPrice : item.price;
                 const amount = price * item.quantity;
                 return `
-                    <tr>
-                      <td class="p-1 border border-black/50 text-center">${index + 1}</td>
-                      <td class="p-1 border border-black/50 capitalize !whitespace-normal">${item.name}</td>
-                      <td class="p-1 border border-black/50 text-center whitespace-nowrap">₹ ${price.toLocaleString("en-IN")}</td>
-                      <td class="p-1 border border-black/50 text-center">${item.quantity}</td>
-                      <td class="p-1 border border-black/50 text-center whitespace-nowrap">₹ ${amount.toLocaleString("en-IN")}</td>
+                    <tr >
+                      <td class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"} text-center">${index + 1}</td>
+                      <td class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"} capitalize !whitespace-normal">${item.name}</td>
+                      <td class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"} text-center whitespace-nowrap">₹ ${price.toLocaleString("en-IN")}</td>
+                      <td class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"} text-center">${item.quantity}</td>
+                      <td class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"} text-center whitespace-nowrap">₹ ${amount.toLocaleString("en-IN")}</td>
                     </tr>
                   `;
             }).join("")}
               </tbody>
-              <tfoot class="font-medium">
+              <tfoot class="font-medium ">
                 ${billData?.selectedProducts.some((item:any) => item.gstAmount > 0)
                 ? `
                       <tr>
-                        <td colspan="4" class="p-1 border border-black/50 ">Sub Total</td>
-                        <td class="p-1 border text-center border-black/50 whitespace-nowrap">₹ ${totalPrice.toLocaleString("en-IN")}</td>
+                        <td colspan="4" class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">Sub Total</td>
+                        <td class="p-1 border text-center ${billPageData?.showTable ? "border-black/50 border" : "border-none"} whitespace-nowrap">₹ ${totalPrice.toLocaleString("en-IN")}</td>
                       </tr>
-                      <tr>
-                        <td colspan="4" class="p-1 border border-black/50 ">GST (${profileData?.gstPercentage}%)</td>
-                        <td class="p-1 border text-center border-black/50 whitespace-nowrap">₹ ${totalGst.toLocaleString("en-IN")}</td>
+                      <tr class="${billPageData?.showTable ? "border-black/50 border" : "border-b border-dashed border-black"}">
+                        <td colspan="4" class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">GST (${profileData?.gstPercentage}%)</td>
+                        <td class="p-1 border text-center ${billPageData?.showTable ? "border-black/50 border" : "border-none"} whitespace-nowrap">₹ ${totalGst.toLocaleString("en-IN")}</td>
                       </tr>
                     `
                 : ""
             }
                 <tr class="font-semibold text-sm">
-                  <td colspan="4" class="p-1 border border-black/50 ">Total</td>
-                  <td class="p-1 border text-center border-black/50 whitespace-nowrap">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
+                  <td colspan="4" class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">Total</td>
+                  <td class="p-1 border text-center ${billPageData?.showTable ? "border-black/50 border" : "border-none"} whitespace-nowrap">₹ ${Number(billData?.totalAmount).toLocaleString("en-IN")}</td>
                 </tr>
               </tfoot>
             </table>

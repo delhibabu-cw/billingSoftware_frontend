@@ -40,7 +40,7 @@ const ProductCreateModal = ({ openModal, handleClose, modalId, modalType, produc
         name: yup.string().required('This Field is Required.'),
         category: yup.string().required('This Field is Required.'),
         description: yup.string().optional(),
-        img_url: yup.string().required('This Field is Required.'),
+        img_url: yup.string().optional(),
         price: yup.string().required('This Field is Required.'),
 
         isgst: yup.string().oneOf(['true', 'false']).required('This Field is Required.'),
@@ -375,7 +375,7 @@ const ProductCreateModal = ({ openModal, handleClose, modalId, modalType, produc
                                 </div>
                             )}
                             <div className="col-span-12 md:col-span-6">
-                                <label htmlFor="contact-lead-score" className="mb-1 text-white/80 font-OpenSans">Product Image <span className="text-primaryColor">*</span></label>
+                                <label htmlFor="contact-lead-score" className="mb-1 text-white/80 font-OpenSans">Product Image</label>
                                 <div className="min-h-fit border-dashed border-primaryColor border-[2px] !border-spacing-10 rounded-md flex justify-center items-center mt-2 py-6">
                                     {watchResume ? (
                                         <div className="flex flex-wrap justify-center gap-3 overflow-hidden">

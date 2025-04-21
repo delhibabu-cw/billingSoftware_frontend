@@ -8,7 +8,7 @@ import toast from "react-hot-toast"
 import { deleteProductCategoryApi, getProductCategoryApi } from "../../../api-service/client"
 import { BiEdit } from "react-icons/bi"
 import CategoryCreateModal from "./CategoryCreateModal"
-
+import NoImg from  "../../../assets/images/noDataFound/noImage.jpg"
 
 
 const ClientCategory = () => {
@@ -75,7 +75,7 @@ const ClientCategory = () => {
                                 <div className="flex justify-between gap-6 p-3  rounded-3xl bg-gradient-to-b from-[#222830] to-white/20 backdrop-blur-md" key={index}>
                                     <div className="flex gap-2">
 
-                                        <img src={idx?.img_url} className="object-cover w-[70px] h-[70px] rounded-md shadow-xl" alt={idx?.name} />
+                                        <img src={idx?.img_url ? idx?.img_url : NoImg} className="object-cover w-[70px] h-[70px] rounded-md shadow-xl" alt={NoImg} />
                                         <div >
                                             <p className="font-semibold text-white">{idx?.name?.length > 12 ? (idx?.name.slice(0, 12) + "..") : idx?.name}</p>
 

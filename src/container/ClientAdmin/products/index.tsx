@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { HiOutlineDocumentCurrencyRupee } from "react-icons/hi2";
 import { FaToggleOff, FaToggleOn } from "react-icons/fa6";
 import StockProductCreateModal from "../stock/StockProductCreateModal";
-
+import NoImg from "../../../assets/images/noDataFound/noImage.jpg"
 
 const ClientProducts = () => {
 
@@ -201,7 +201,7 @@ const ClientProducts = () => {
                 >
                   <div className="flex gap-2">
 
-                    <img src={idx?.img_url} className="object-cover w-20 h-20 md:w-20 md:h-20 border-[1px] border-white/15 rounded-md shadow-xl" alt={idx?.name} />
+                    <img src={idx?.img_url ? idx?.img_url : NoImg} className="object-cover w-20 h-20 md:w-20 md:h-20 border-[1px] border-white/15 rounded-md shadow-xl" alt={idx?.name} />
                     <div >
                       <p className="font-semibold text-white">{idx?.name?.length > 16 ? (idx?.name.slice(0, 16) + "..") : idx?.name}</p>
 
