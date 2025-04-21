@@ -1,10 +1,21 @@
-import noDataImg from "../../assets/images/noDataFound/image 1866.png"
+
+import noDataImg from "../../assets/json/Animation - 1745217715530.json"
+import Lottie from 'react-lottie'
 
 function NoDataFound() {
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: noDataImg,
+  };
+  
   return (
     <div className='py-5 mx-auto font-OpenSans'>
-    <img src={noDataImg} className='mx-auto w-36 2xl:w-40' alt="No Image" />
-    <p className='mt-3 text-sm text-center text-white font-Poppins'>No Data Found</p>
+      <div className="w-[70%] sm:w-[50%] md:w-[30%] lg:w-[25%] mx-auto">
+      <Lottie options={defaultOptions} />
+      </div>
+      <p className="mx-auto text-center text-white">No Data Found</p>
 </div>
   )
 }
