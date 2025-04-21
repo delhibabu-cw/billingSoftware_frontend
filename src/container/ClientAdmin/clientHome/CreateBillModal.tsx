@@ -274,22 +274,22 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
                 : `<p></p>`
             }
         
-             <p class="text-right flex justify-end gap-1 flex-wrap items-center text-[11px]">
-                <span class="flex items-center gap-[3px]">
+              <div class=" flex flex-wrap items-center text-[11px] ml-auto">
+                <span class="flex items-center gap-1">
                     <!-- Calendar Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="!h-4 !w-4 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="!h-3 !w-3 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     ${isFormatDate(billData?.dateTime)}
                 </span>
-                <span class="flex items-center gap-[3px]">
+                <span class="flex items-center gap-1">
                     <!-- Clock Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     ${isFormatTime(billData?.dateTime)}
                 </span>
-                </p>
+                </div>
             </div>
             
             <!-- Header Section -->
@@ -312,20 +312,20 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
             }
         
               ${billPageData?.header?.address
-                ? `<p class="text-center text-sm capitalize">${billPageData?.header?.address}</p>`
+                ? `<p class="text-center text-xs capitalize">${billPageData?.header?.address}</p>`
                 : ""
             }
             </div>
-             ${billPageData?.header?.address
-                ? `<div class='flex gap-1 justify-center items-center mt-1'>
-                    <!-- Phone Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V8a1 1 0 01-.293.707L8.414 10.414a16.016 16.016 0 007.172 7.172l1.707-1.707a1 1 0 01.707-.293h1.586a1 1 0 011 1v2.586a2 2 0 01-2 2A17 17 0 013 5z" />
-                    </svg>
-                    <p class="text-sm">${billPageData?.header?.contact}</p>
-                </div>`
-                : ""
-            }
+             ${billPageData?.header?.contact
+              ? `<div class='flex gap-1 justify-center items-center mt-1'>
+                  <!-- Phone Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V8a1 1 0 01-.293.707L8.414 10.414a16.016 16.016 0 007.172 7.172l1.707-1.707a1 1 0 01.707-.293h1.586a1 1 0 011 1v2.586a2 2 0 01-2 2A17 17 0 013 5z" />
+                  </svg>
+                  <p class="text-xs">${billPageData?.header?.contact}</p>
+              </div>`
+              : ""
+          }
         
             <!-- Parties -->
             <div class="flex justify-between mt-4 ">

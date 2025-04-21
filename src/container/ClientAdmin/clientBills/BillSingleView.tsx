@@ -152,7 +152,7 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
                 : `<p></p>`
             }
         
-             <p class="text-right flex justify-end gap-1 flex-wrap items-center text-xs">
+             <p class=" flex flex-wrap items-center text-[11px] ml-auto">
                 <span class="flex items-center gap-1">
                     <!-- Calendar Icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="!h-3 !w-3 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -185,28 +185,28 @@ const BillSingleView = ({ openModal, handleClose, modalId }: any) => {
             }
         
               ${billPageData?.header?.businessName
-                ? `<h1 class="text-2xl font-bold text-center">${billPageData?.header?.businessName}</h1>`
+                ? `<h1 class="text-2xl font-bold text-center capitalize">${billPageData?.header?.businessName}</h1>`
                 : ""
             }
         
               ${billPageData?.header?.address
-                ? `<p class="text-center text-sm">${billPageData?.header?.address}</p>`
+                ? `<p class="text-center text-xs capitalize">${billPageData?.header?.address}</p>`
                 : ""
             }
             </div>
-            ${billPageData?.header?.address
+            ${billPageData?.header?.contact
               ? `<div class='flex gap-1 justify-center items-center mt-1'>
                   <!-- Phone Icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V8a1 1 0 01-.293.707L8.414 10.414a16.016 16.016 0 007.172 7.172l1.707-1.707a1 1 0 01.707-.293h1.586a1 1 0 011 1v2.586a2 2 0 01-2 2A17 17 0 013 5z" />
                   </svg>
-                  <p class="text-sm">${billPageData?.header?.contact}</p>
+                  <p class="text-xs">${billPageData?.header?.contact}</p>
               </div>`
               : ""
           }
         
             <!-- Parties -->
-            <div class="flex justify-between mt-4 ">
+            <div class="flex justify-between mt-3 ">
               ${billData?.customer?.name
                 ?  `<div>
                     <p class="font-semibold !text-xs">Customer Details</p>
