@@ -384,7 +384,7 @@ const CreateBillModal = ({ openModal, handleClose, selectedProducts, totalAmount
             }).join("")}
               </tbody>
               <tfoot class="font-medium">
-                ${profileData?.overAllGstToggle === "on"
+                ${billData?.selectedProducts.some((item:any) => item.gstAmount > 0)
                 ? `
                       <tr>
                         <td colspan="4" class="p-1 border border-black/50 ">Sub Total</td>
