@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { getBillPageApi, getProductCategoryApi, postCreateBillApi, putClientProfileApi } from "../../../api-service/client";
+import { getBillPageApi, getProductApi, getProductCategoryApi, postCreateBillApi, putClientProfileApi } from "../../../api-service/client";
 import { FaAngleDown, FaAngleUp, FaMinus, FaPlus, FaToggleOff, FaToggleOn } from "react-icons/fa6";
 import { getProfileApi } from "../../../api-service/authApi";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MdAdd, MdDeleteOutline } from "react-icons/md";
 import { HiOutlineDocumentCurrencyRupee } from "react-icons/hi2";
 import toast from "react-hot-toast";
@@ -13,6 +13,14 @@ import CreateBillModal from "./CreateBillModal";
 import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScreen";
 import { isFormatDate, isFormatTime } from "../../../utils/helper";
 import NoImg from  "../../../assets/images/noDataFound/noImage.jpg"
+
+// type Product = {
+//     _id: string;
+//     name: string;
+//     shortcutKey: number;
+//     quantity: number;
+//     [key: string]: any; // allows additional dynamic keys
+//   };
 
 const ClientHome = () => {
 
@@ -30,8 +38,8 @@ const ClientHome = () => {
     const profileData = getProfileData?.data?.data?.result;
 
     const getProductCategoryData = useQuery({
-        queryKey: ["getProductCategoryData", search],
-        queryFn: () => getProductCategoryApi(`?search=${search}`),
+        queryKey: ["getProductCategoryData",],
+        queryFn: () => getProductCategoryApi(`?`),
     });
 
     const productCategoryData = getProductCategoryData?.data?.data?.result || [];
@@ -171,11 +179,19 @@ const ClientHome = () => {
 
     const handleCreateBill = async () => {
         try {
-            setLoading(true);
+            const currentProducts = selectedProductsRef.current;
 
+            if (!currentProducts || currentProducts.length === 0) {
+              toast.error("No products selected.");
+              return;
+            }
+
+            setLoading(true);
+            console.log("selectedProducts payload",selectedProducts);
+            
             const payload = {
                 totalAmount,
-                selectedProducts: selectedProducts?.map((idx: any) => {
+                selectedProducts: currentProducts?.map((idx: any) => {
                     const gstAmountPerUnit =
                         profileData?.overAllGstToggle === "on" ? idx.gstAmount : 0;
                     const totalGstAmount = gstAmountPerUnit * idx.quantitySelected;
@@ -205,6 +221,8 @@ const ClientHome = () => {
                 }),
             };
 
+            console.log("payload",payload);
+            
             const postApi = await postCreateBillApi(payload);
 
             if (postApi?.status === 200) {
@@ -232,6 +250,20 @@ const ClientHome = () => {
             setLoading(false);
         }
     };
+
+    const handleCreateBillFromRef = async () => {
+        const currentProducts = selectedProductsRef.current;
+      
+        if (!currentProducts || currentProducts.length === 0) {
+          toast.error("No products selected.");
+          return;
+        }
+      
+        // Everything inside this function is same as handleCreateBill,
+        // but it reads `selectedProductsRef.current` directly.
+        // You can extract common logic if needed.
+        await handleCreateBill(); // optional: reuse if your `handleCreateBill` reads from `ref`
+      };
 
     // const handlePrint = (billData: any, billPageData: any) => {
     //     const printContent = generatePrintContent(billData, billPageData);
@@ -490,18 +522,123 @@ const ClientHome = () => {
         `;
     };
 
+    // for shorcutkey products
+    const [data, setData] = useState<any[]>([]);
+    const [notFound, setNotFound] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const selectedProductsRef = useRef<any[]>([]);
+
+    const getProductData = useQuery({
+        queryKey: ["getProductData"],
+        queryFn: () => getProductApi(``),
+      });
+    
+      useEffect(() => {
+        if (getProductData?.data?.data?.result) {
+          setData(getProductData.data.data.result);
+        }
+        inputRef.current?.focus();
+      }, [getProductData]);
+
+      useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+          if (e.key.toLowerCase() === 'p' && window.location.pathname === "/home") {
+            const currentProducts = selectedProductsRef.current;
+            if (!currentProducts || currentProducts.length === 0) {
+              toast.error("No products selected.");
+              return;
+            }
+            handleCreateBillFromRef(); // ✅ use new function
+          }
+        };
+      
+        window.addEventListener("keydown", handleKeyPress);
+        return () => window.removeEventListener("keydown", handleKeyPress);
+      }, []);
+
+      useEffect(() => {
+        selectedProductsRef.current = selectedProducts;
+      }, [selectedProducts]);
+      
+
+      const addOrUpdateProduct = (shortcutKey: number) => {
+        const match = data?.find((item: any) => item.shortcutKey === shortcutKey);
+        if (!match) {
+          setNotFound(true);
+          return;
+        }
+    
+        setNotFound(false);
+    
+        setSelectedProducts((prev) => {
+          const existing = prev.find((p) => p._id === match._id);
+          if (existing) {
+            return prev.map((p) =>
+              p._id === match._id ? { ...p, quantitySelected: p.quantity + 1 } : p
+            );
+          } else {
+            return [...prev, { ...match, quantitySelected: 1 }];
+          }
+        });
+    
+        setSearch(""); // Reset input
+      };
+    
+      const updateLastQuantity = (delta: number) => {
+        if (selectedProducts.length === 0) return;
+        const lastIndex = selectedProducts.length - 1;
+        const updated = [...selectedProducts];
+        updated[lastIndex].quantitySelected = Math.max(
+          1,
+          (updated[lastIndex].quantitySelected || 1) + delta
+        );
+        setSelectedProducts(updated);
+      };
+    
+      const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        // if (e.key === "Enter" || e.key === " ") {
+        if (e.key === "Enter") {
+          const shortcut = Number(search.trim());
+          if (!isNaN(shortcut)) {
+            addOrUpdateProduct(shortcut);
+          }
+        } else if (e.key === "+") {
+          updateLastQuantity(1);
+        } else if (e.key === "-") {
+          updateLastQuantity(-1);
+        }
+      };    
+
     return (
         <>
             <div className="relative  h-full pt-24 lg:pt-28 px-[4%] pb-10">
                 <div className="absolute top-0 left-0 bg-white h-[5px] 2xl:h-[50px] w-full rounded-b-lg blur-[160px] 2xl:blur-[170px]"></div>
                 <div className="absolute bottom-0 right-0 bg-white h-[70%] w-[30px] 2xl:w-[35px] rounded-s-lg blur-[160px] 2xl:blur-[200px]"></div>
                 <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                    <input
+                    {/* <input
                         type="search"
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search Category Here..."
                         className="bg-white/10 backdrop-blur-none px-3 pt-[3px] pb-[6px] rounded-md placeholder:text-white/70 placeholder:text-xs w-fit md:max-w-xs md:w-full border-[1.5px] text-white border-[#f1f6fd61] outline-none"
-                    />
+                    /> */}
+                    <div className="flex justify-center max-w-md ">
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Enter Shortcut Key..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value.replace(/\D/g, "")) // Only digits
+            }
+            onKeyDown={handleKeyDown}
+            className="bg-white/10 px-3 pt-[6px] pb-[9px] rounded-md placeholder:text-white/70 placeholder:text-xs w-full border-[1.5px] text-white border-[#f1f6fd61] outline-none"
+          />
+          {notFound && (
+          <div className="text-red-500 text-center mt-3">
+            No matching product found.
+          </div>
+        )}
+        </div>
 
                     <div className="flex flex-wrap items-center gap-3 ">
                         <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor cursor-pointer hover:bg-primaryColor hover:text-black"
@@ -788,7 +925,7 @@ const ClientHome = () => {
                                                 className="flex items-center w-full gap-3 2xl:gap-1  bg-gradient-to-b from-[#222830e2] to-[#222830d9] backdrop-blur-xl rounded-3xl p-3 border-[1px] shadow-md"
                                                 onClick={() => handleProductClick(product)}>
                                                 <img
-                                                    src={product?.img_url}
+                                                    src={product?.img_url ? product?.img_url : NoImg}
                                                     className="object-cover h-16 rounded-lg w-14"
                                                     alt=""
                                                 />
@@ -910,7 +1047,8 @@ const ClientHome = () => {
                                                     disabled={profileData?.billPageDetails === 'no'}
                                                     type="button" onClick={() => handleCreateBill()}
                                                     className="px-3 py-2 font-semibold bg-primaryColor rounded-3xl ">Create Bill & Print</button>
-                                                {profileData?.billPageDetails === 'no' && <p onClick={() => navigate('/billPage')} className="flex items-center gap-1 mt-1 text-xs hover:cursor-pointer"><span className="text-lg text-red-500">*</span> BillPage is Not Added, Kindly Add It.</p>}                                                </div>
+                                                {profileData?.billPageDetails === 'no' && <p onClick={() => navigate('/billPage')} className="flex items-center gap-1 mt-1 text-xs hover:cursor-pointer"><span className="text-lg text-red-500">*</span> BillPage is Not Added, Kindly Add It.</p>}
+                                                </div>
                                         )}
                                     </div>
                                 </div>

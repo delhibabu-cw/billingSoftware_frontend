@@ -4,6 +4,7 @@ import ClientBills from "../container/ClientAdmin/clientBills";
 import ClientHome from "../container/ClientAdmin/clientHome";
 import ClientProfile from "../container/ClientAdmin/clientProfile";
 import ClientProducts from "../container/ClientAdmin/products";
+import ShortcutPage from "../container/ClientAdmin/shortcutPage";
 import ClientStock from "../container/ClientAdmin/stock";
 import StockProductSingleView from "../container/ClientAdmin/stock/StockProductSingleView";
 
@@ -39,5 +40,9 @@ export const clientAdminRoutes = [
     {
       path: 'stock/:id',
       element: <StockProductSingleView />,
+    },
+    {
+      path: 'shortcutPage',
+      element: <ShortcutPage />,
     },
 ]

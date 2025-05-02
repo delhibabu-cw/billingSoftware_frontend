@@ -54,6 +54,7 @@ const ClientProfileUpdateModal = ({ openModal, handleClose, refetch, }: any) => 
         overAllGstToggle: yup.string().required('This Field is Required.'),
         customerToggle: yup.string().required('This Field is Required.'),
         employeeToggle: yup.string().required('This Field is Required.'),
+        shortcutToggle: yup.string().required('This Field is Required.'),
         img_url: yup.string().optional(),
     })
 
@@ -118,6 +119,7 @@ const ClientProfileUpdateModal = ({ openModal, handleClose, refetch, }: any) => 
             setValue('overAllGstToggle', profileData?.overAllGstToggle === 'on' ? "on" : "off");
             setValue('customerToggle', profileData?.customerToggle === 'on' ? "on" : "off");
             setValue('employeeToggle', profileData?.employeeToggle === 'on' ? "on" : "off");
+            setValue('shortcutToggle', profileData?.shortcutToggle === 'on' ? "on" : "off");
         }
     }, [profileData, setValue]);
 
@@ -348,6 +350,39 @@ const ClientProfileUpdateModal = ({ openModal, handleClose, refetch, }: any) => 
                                     </div>
                                 </div>
                                 {errors?.employeeToggle && <p className='mt-1 text-xs font-medium text-primaryColor'>{getErrorMessage(errors?.employeeToggle)}</p>}
+                                {profileData?.gstPercentage === '' && <p className='mt-1 text-xs font-medium text-primaryColor'>Please Add The GST Percentage In Profile</p>}
+                            </div>
+                            <div className="col-span-12 md:col-span-6">
+                                <label htmlFor="gender" className="mb-1 text-white/80 font-OpenSans">Shortcut Page<span className='text-primaryColor'>*</span></label>
+                                <div className="flex items-center mt-1">
+                                    <div className="rounded-md px-2 py-[6px]  w-fit gap-2 flex bg-white/10 backdrop-blur-md outline-none placeholder:text-white/90 placeholder:text-sm border-[1.5px] border-white/40 text-white">
+                                        <input
+                                            className="cursor-pointer form-check-input"
+                                            type="radio"
+                                            //   name="gender"
+                                            value="on"
+                                            id="yes"
+                                            {...register('shortcutToggle')}
+                                        />
+                                        <label className="form-check-label" htmlFor="yes">
+                                            Yes
+                                        </label>
+                                    </div>
+                                    <div className="ml-3 rounded-md px-2 py-[6px]  w-fit gap-2 flex bg-white/10 backdrop-blur-md outline-none placeholder:text-white/90 placeholder:text-sm border-[1.5px] border-white/40 text-white">
+                                        <input
+                                            className="cursor-pointer form-check-input"
+                                            type="radio"
+                                            //   name="gender"
+                                            value="off"
+                                            id="no"
+                                            {...register('shortcutToggle')}
+                                        />
+                                        <label className="form-check-label" htmlFor="no">
+                                            No
+                                        </label>
+                                    </div>
+                                </div>
+                                {errors?.shortcutToggle && <p className='mt-1 text-xs font-medium text-primaryColor'>{getErrorMessage(errors?.shortcutToggle)}</p>}
                                 {profileData?.gstPercentage === '' && <p className='mt-1 text-xs font-medium text-primaryColor'>Please Add The GST Percentage In Profile</p>}
                             </div>
                             <div className="col-span-12 md:col-span-6">

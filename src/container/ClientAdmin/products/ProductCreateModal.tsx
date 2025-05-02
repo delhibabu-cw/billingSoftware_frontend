@@ -41,6 +41,7 @@ const ProductCreateModal = ({ openModal, handleClose, modalId, modalType, produc
         category: yup.string().required('This Field is Required.'),
         description: yup.string().optional(),
         img_url: yup.string().optional(),
+        shortcutKey: yup.string().optional(),
         price: yup.string().required('This Field is Required.'),
 
         isgst: yup.string().oneOf(['true', 'false']).required('This Field is Required.'),
@@ -138,6 +139,7 @@ const ProductCreateModal = ({ openModal, handleClose, modalId, modalType, produc
             setValue('img_url', productData?.img_url)
             setValue('category', productData?.category?._id || '');
             setValue('price', productData?.price || '');
+            setValue('shortcutKey', productData?.shortcutKey || '');
             // Convert boolean to string to match radio button values
             const isgstValue = productData?.isgst ? "true" : "false";
             setValue('isgst', isgstValue);
@@ -374,6 +376,16 @@ const ProductCreateModal = ({ openModal, handleClose, modalId, modalType, produc
                                     {errors.gstAmount && <p className="mt-1 text-xs font-medium text-primaryColor">{getErrorMessage(errors.gstAmount)}</p>}
                                 </div>
                             )}
+                             <div className="col-span-12 md:col-span-6">
+                                <p className="mb-1 text-white/80 font-OpenSans">Shortcut Key</p>
+                                <input type="text"
+                                    placeholder="Enter Shortcut Key"
+                                    className=" rounded-md px-3 py-[6px]  w-full bg-white/10 backdrop-blur-md outline-none placeholder:text-white/90 placeholder:text-sm border-[1.5px] border-white/40 text-white"
+                                    {...register('shortcutKey')}
+                                    onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '') }}
+                                />
+                                {errors.shortcutKey && <p className="mt-1 text-xs font-medium text-primaryColor">{getErrorMessage(errors.shortcutKey)}</p>}
+                            </div>
                             <div className="col-span-12 md:col-span-6">
                                 <label htmlFor="contact-lead-score" className="mb-1 text-white/80 font-OpenSans">Product Image</label>
                                 <div className="min-h-fit border-dashed border-primaryColor border-[2px] !border-spacing-10 rounded-md flex justify-center items-center mt-2 py-6">

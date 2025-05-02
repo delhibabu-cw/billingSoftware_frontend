@@ -14,6 +14,7 @@ import { ImProfile } from "react-icons/im";
 import { RiBillLine } from "react-icons/ri";
 import { AiOutlineAppstore } from "react-icons/ai";
 import { FaUserCircle } from "react-icons/fa";
+import { TbTableShortcut } from "react-icons/tb";
 
 function NavbarIndex() {
 
@@ -168,6 +169,17 @@ function NavbarIndex() {
             <div className="hidden lg:block ">
               <div className="flex items-center gap-2">
                {(getProfileData?.data?.data?.result?.role?.name === 'CLIENTADMIN') && (<>
+               {getProfileData?.data?.data?.result?.shortcutToggle === 'on' ? (
+                <div className="relative">
+                <button 
+                onClick={()=>navigate('/shortcutPage')} className={`flex items-center justify-center w-10 h-10 text-xl border rounded-full group  ${location.pathname === '/shortcutPage' ? "bg-primaryColor text-black" : "text-white/70 border-white/50 hover:bg-primaryColor hover:text-black"}`}>
+                  <TbTableShortcut />
+                  <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 rounded-md opacity-0 whitespace-nowrap bg-black/80 -bottom-7 left-1/2 group-hover:opacity-100">
+                    Shortcut Page
+                  </span>
+                </button>
+              </div>
+               ) : ""}
                 <div className="relative">
                   <button 
                   onClick={()=>navigate('/billPage')} className={`flex items-center justify-center w-10 h-10 text-xl border rounded-full group  ${location.pathname === '/billPage' ? "bg-primaryColor text-black" : "text-white/70 border-white/50 hover:bg-primaryColor hover:text-black"}`}>

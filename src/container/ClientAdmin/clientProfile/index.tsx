@@ -153,6 +153,13 @@ const ClientProfile = () => {
                                 </div>
                                 <p className="text-lg font-semibold">{profileData?.employeeToggle === 'on' ? 'Yes' : "No"}</p>
                             </div>
+                            <div className="flex items-center w-full gap-3 text-white">
+                                <div className="flex justify-between w-full max-w-36 xl:max-w-36 text-white/85">
+                                    <p>Shortcut Page</p>
+                                    <p>:</p>
+                                </div>
+                                <p className="text-lg font-semibold">{profileData?.shortcutToggle === 'on' ? 'Yes' : "No"}</p>
+                            </div>
                         </div>
                     </div>
 
