@@ -26,6 +26,14 @@ export const deleteProductCategoryApi = async (query : any) => {
     return apiFunctions.put(`${siteUrls.client.productCategory}/${query}`,payload);
   };
 
+  export const putProductShortcutKeyApi = async (payload : any, query: any) => {
+    return apiFunctions.put(`${siteUrls.client.product}/${query}/shortcutkey`,payload);
+  };
+
+  export const deleteProductShortcutKeyApi = async (query : any) => {
+    return apiFunctions.delete(`${siteUrls.client.product}/${query}/shortcutkey`);
+  }
+
   export const getProductApi = async (query : any) => {
     return apiFunctions.get(`${siteUrls.client.product}${query}`);
   }

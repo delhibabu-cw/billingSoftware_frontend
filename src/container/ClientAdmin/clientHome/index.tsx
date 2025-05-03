@@ -156,7 +156,7 @@ const ClientHome = () => {
     // }, [selectedProducts, profileData?.overAllGstToggle]);
 
     const totalAmount = useMemo(() => {
-        if (!selectedProducts || selectedProducts.length === 0) return '0.00';
+        if (!selectedProducts || selectedProducts.length === 0) return 0;
 
         return selectedProducts.reduce((sum: any, product: any) => {
             const unitPrice = product?.productAddedFromStock === 'yes' ? product?.actualPrice : product?.price;
@@ -185,6 +185,18 @@ const ClientHome = () => {
               toast.error("No products selected.");
               return;
             }
+
+              // Ensure totalAmount is calculated here
+        const totalAmount = currentProducts.reduce((total, product) => {
+            const gstAmountPerUnit = profileData?.overAllGstToggle === "on" ? product.gstAmount : 0;
+            const totalGstAmount = gstAmountPerUnit * product.quantitySelected;
+
+            const productTotalPrice = (product.productAddedFromStock === "yes"
+                ? product?.actualPrice
+                : product.price) * product.quantitySelected;
+
+            return total + productTotalPrice + totalGstAmount;
+        }, 0);
 
             setLoading(true);
             console.log("selectedProducts payload",selectedProducts);
@@ -236,13 +248,14 @@ const ClientHome = () => {
                     employee: postApi?.data?.result?.employee,
                 };
 
-                // Wait for the query to refetch with billData
                 await getBillPageData.refetch();
-
-                // Then print
                 handlePrint(billPayload, getBillPageData?.data?.data?.result);
-
+                
+                // ✅ Wait for product data to update
+                await getProductCategoryData.refetch(); // <- move this here
+                await getProductData.refetch(); // <- move this here
                 setSelectedProducts([]);
+                setSearch("");
             }
         } catch (err) {
             console.log(err);
@@ -259,46 +272,12 @@ const ClientHome = () => {
           return;
         }
       
+        // setSearch(""); // ✅ Force-clear before printing
         // Everything inside this function is same as handleCreateBill,
         // but it reads `selectedProductsRef.current` directly.
         // You can extract common logic if needed.
         await handleCreateBill(); // optional: reuse if your `handleCreateBill` reads from `ref`
       };
-
-    // const handlePrint = (billData: any, billPageData: any) => {
-    //     const printContent = generatePrintContent(billData, billPageData);
-
-    //     const iframe = document.createElement("iframe");
-    //     iframe.style.position = "fixed";
-    //     iframe.style.top = "-10000px";
-    //     iframe.style.left = "-10000px";
-    //     document.body.appendChild(iframe);
-
-    //     const contentWindow = iframe.contentWindow;
-    //     if (!contentWindow) return;
-
-    //     const doc = contentWindow.document;
-    //     doc.open();
-    //     doc.write(printContent);
-    //     doc.close();
-
-    //     iframe.onload = () => {
-    //       setTimeout(() => {
-    //         contentWindow.focus();
-    //         contentWindow.print();
-
-    //         // Listen for afterprint event to refresh the page once print dialog is closed
-    //         contentWindow.addEventListener('afterprint', () => {
-    //           // Refresh the page
-    //           window.location.reload();
-    //         });
-
-    //         setTimeout(() => {
-    //           document.body.removeChild(iframe);
-    //         }, 1000);
-    //       }, 500);
-    //     };
-    //   };
 
     const handlePrint = (billData: any, billPageData: any) => {
         const printContent = generatePrintContent(billData, billPageData);
@@ -324,7 +303,7 @@ const ClientHome = () => {
 
                 // ✅ Immediately refetch your API after triggering print
                 getProductCategoryData.refetch();
-
+                getProductData.refetch();
                 // Optional: cleanup the iframe after a second
                 setTimeout(() => {
                     document.body.removeChild(iframe);
@@ -535,79 +514,235 @@ const ClientHome = () => {
     
       useEffect(() => {
         if (getProductData?.data?.data?.result) {
-          setData(getProductData.data.data.result);
+          setData(getProductData?.data?.data?.result);
         }
         inputRef.current?.focus();
       }, [getProductData]);
 
       useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
-          if (e.key.toLowerCase() === 'p' && window.location.pathname === "/home") {
+          if (window.location.pathname !== "/home") return;
+      
+          const key = e.key.toLowerCase();
+          if (key === 'p' || key === ' ') {
+            e.preventDefault(); // Prevent scrolling
+      
+            const shortcutKey = Number(search);
+            if (!isNaN(shortcutKey) && search !== "") {
+              addOrUpdateProduct(shortcutKey); // This may batch with setSearch
+              setTimeout(() => setSearch(""), 0); // 🔥 Ensure search clears AFTER product added
+            }
+      
             const currentProducts = selectedProductsRef.current;
             if (!currentProducts || currentProducts.length === 0) {
               toast.error("No products selected.");
               return;
             }
-            handleCreateBillFromRef(); // ✅ use new function
+      
+            handleCreateBillFromRef(); // Proceed to print
           }
         };
       
         window.addEventListener("keydown", handleKeyPress);
         return () => window.removeEventListener("keydown", handleKeyPress);
-      }, []);
+      }, [search]);
+      
+
+      
+    //   useEffect(() => {
+    //     const handleKeyPress = (e: KeyboardEvent) => {
+    //       if ((e.key.toLowerCase() === 'p' || e.key === " ") && window.location.pathname === "/home") {
+    //         const currentProducts = selectedProductsRef.current;
+    //         if (!currentProducts || currentProducts.length === 0) {
+    //           toast.error("No products selected.");
+    //           return;
+    //         }
+    //         handleCreateBillFromRef(); // ✅ use new function
+    //       }
+    //     };
+      
+    //     window.addEventListener("keydown", handleKeyPress);
+    //     return () => window.removeEventListener("keydown", handleKeyPress);
+    //   }, []);
 
       useEffect(() => {
         selectedProductsRef.current = selectedProducts;
       }, [selectedProducts]);
       
 
-      const addOrUpdateProduct = (shortcutKey: number) => {
+    //   const addOrUpdateProduct = (shortcutKey: number) => {
+    //     const match = data?.find((item: any) => item.shortcutKey === shortcutKey);
+    //     if (!match) {
+    //       setNotFound(true);
+    //       return;
+    //     }
+      
+    //     setNotFound(false);
+      
+    //     setSelectedProducts((prev) => {
+    //       const existing = prev.find((p) => p._id === match._id);
+    //       if (existing) {
+    //         return prev.map((p) =>
+    //           p._id === match._id
+    //             ? {
+    //                 ...p,
+    //                 quantitySelected: (p.quantitySelected || 1) + 1,
+    //               }
+    //             : p
+    //         );
+    //       } else {
+    //         return [...prev, { ...match, quantitySelected: 1 }];
+    //       }
+    //     });
+      
+    //     setSearch(""); // Reset input
+    //   };
+
+    // const addOrUpdateProduct = (shortcutKey: number) => {
+    //     const match = data?.find((item: any) => item.shortcutKey === shortcutKey);
+    //     console.log("Current count in DB:", match.count);
+    //     if (!match || match.productAddedFromStock !== "yes" || match.count <= 0) {
+    //       setNotFound(true);
+    //       return;
+    //     }
+      
+    //     setNotFound(false);
+      
+    //     setSelectedProducts((prev) => {
+    //       const existing = prev.find((p) => p._id === match._id);
+    //       if (existing) {
+    //         if ((existing.quantitySelected || 1) >= match.count) return prev; // Don't exceed stock
+    //         return prev.map((p) =>
+    //           p._id === match._id
+    //             ? { ...p, quantitySelected: (p.quantitySelected || 1) + 1 }
+    //             : p
+    //         );
+    //       } else {
+    //         return [...prev, { ...match, quantitySelected: 1 }];
+    //       }
+    //     });
+      
+    //     setSearch(""); // Reset input
+    //   };
+
+    const addOrUpdateProduct = (shortcutKey: number) => {
         const match = data?.find((item: any) => item.shortcutKey === shortcutKey);
+      
         if (!match) {
           setNotFound(true);
+          toast.error("Product not found.");
           return;
         }
-    
+      
         setNotFound(false);
-    
+
+         // If product is stock-based and count is 0
+        if (match.productAddedFromStock === "yes" && match.count === 0) {
+            toast.error(`No stock available for "${match.name}"`);
+            return;
+        }
+      
         setSelectedProducts((prev) => {
           const existing = prev.find((p) => p._id === match._id);
+      
+          // If product comes from stock, respect count
+          if (match.productAddedFromStock === "yes") {
+            if (match.count <= 0) return prev; // No stock
+      
+            if (existing) {
+              const newQty = (existing.quantitySelected || 1) + 1;
+              if (newQty > match.count) return prev; // Exceeds stock
+              return prev.map((p) =>
+                p._id === match._id ? { ...p, quantitySelected: newQty } : p
+              );
+            } else {
+              return [...prev, { ...match, quantitySelected: 1 }];
+            }
+          }
+      
+          // For non-stock items, allow normal behavior
           if (existing) {
             return prev.map((p) =>
-              p._id === match._id ? { ...p, quantitySelected: p.quantity + 1 } : p
+              p._id === match._id
+                ? { ...p, quantitySelected: (p.quantitySelected || 1) + 1 }
+                : p
             );
           } else {
             return [...prev, { ...match, quantitySelected: 1 }];
           }
         });
-    
+      
         setSearch(""); // Reset input
       };
-    
-      const updateLastQuantity = (delta: number) => {
+      
+
+      
+    //   const updateLastQuantity = (delta: number) => {
+    //     if (selectedProducts.length === 0) return;
+    //     const lastIndex = selectedProducts.length - 1;
+    //     const updated = [...selectedProducts];
+    //     updated[lastIndex].quantitySelected = Math.max(
+    //       1,
+    //       (updated[lastIndex].quantitySelected || 1) + delta
+    //     );
+    //     setSelectedProducts(updated);
+    //   };
+
+    // const updateLastQuantity = (delta: number) => {
+    //     if (selectedProducts.length === 0) return;
+    //     const lastIndex = selectedProducts.length - 1;
+    //     const updated = [...selectedProducts];
+    //     const current = updated[lastIndex];
+      
+    //     // Find original data to get current count
+    //     const original = data?.find((p: any) => p._id === current._id);
+    //     if (!original) return;
+      
+    //     const newQty = (current.quantitySelected || 1) + delta;
+    //     if (newQty < 1 || newQty > original.count) return; // Validate limits
+      
+    //     updated[lastIndex].quantitySelected = newQty;
+    //     setSelectedProducts(updated);
+    //   };
+
+    const updateLastQuantity = (delta: number) => {
         if (selectedProducts.length === 0) return;
         const lastIndex = selectedProducts.length - 1;
         const updated = [...selectedProducts];
-        updated[lastIndex].quantitySelected = Math.max(
-          1,
-          (updated[lastIndex].quantitySelected || 1) + delta
-        );
+        const current = updated[lastIndex];
+      
+        const original = data?.find((p: any) => p._id === current._id);
+        if (!original) return;
+      
+        const newQty = (current.quantitySelected || 1) + delta;
+      
+        // Only validate limit for stock-based products
+        if (original.productAddedFromStock === "yes") {
+          if (newQty < 1 || newQty > original.count) return;
+        } else {
+          if (newQty < 1) return;
+        }
+      
+        updated[lastIndex].quantitySelected = newQty;
         setSelectedProducts(updated);
       };
+      
+      
     
       const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         // if (e.key === "Enter" || e.key === " ") {
         if (e.key === "Enter") {
           const shortcut = Number(search.trim());
-          if (!isNaN(shortcut)) {
+        //   if (!isNaN(shortcut)) {
             addOrUpdateProduct(shortcut);
-          }
+        //   }
         } else if (e.key === "+") {
           updateLastQuantity(1);
         } else if (e.key === "-") {
           updateLastQuantity(-1);
         }
       };    
+
 
     return (
         <>
@@ -621,7 +756,7 @@ const ClientHome = () => {
                         placeholder="Search Category Here..."
                         className="bg-white/10 backdrop-blur-none px-3 pt-[3px] pb-[6px] rounded-md placeholder:text-white/70 placeholder:text-xs w-fit md:max-w-xs md:w-full border-[1.5px] text-white border-[#f1f6fd61] outline-none"
                     /> */}
-                    <div className="flex justify-center max-w-md ">
+                    <div className="flex flex-col ">
           <input
             ref={inputRef}
             type="text"
@@ -631,10 +766,10 @@ const ClientHome = () => {
               setSearch(e.target.value.replace(/\D/g, "")) // Only digits
             }
             onKeyDown={handleKeyDown}
-            className="bg-white/10 px-3 pt-[6px] pb-[9px] rounded-md placeholder:text-white/70 placeholder:text-xs w-full border-[1.5px] text-white border-[#f1f6fd61] outline-none"
+            className="bg-white/10 px-3 pt-[6px] pb-[9px] w-fit rounded-md placeholder:text-white/70 placeholder:text-xs border-[1.5px] text-white border-[#f1f6fd61] outline-none"
           />
           {notFound && (
-          <div className="text-red-500 text-center mt-3">
+          <div className="text-primaryColor text-xs">
             No matching product found.
           </div>
         )}

@@ -28,7 +28,7 @@ const clientData = getClientData?.data?.data?.result
 const plainPassword = useMemo(() => {
   if (clientData?.password && clientData?.passwordIv) {
     const result = decryptPassword(clientData.password, clientData.passwordIv);
-    console.log('Decrypted password:', result);
+    // console.log('Decrypted password:', result);
     return result;
   }
   return '';

@@ -1,135 +1,120 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProductApi } from "../../../api-service/client";
-import { useEffect, useState, useRef } from "react";
+import { deleteProductShortcutKeyApi, getProductApi } from "../../../api-service/client";
+import { useState } from "react";
 import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScreen";
+import { IoMdAdd } from "react-icons/io";
+import { MdDelete } from "react-icons/md";
+import { FaEdit } from "react-icons/fa";
+import NoDataFound from "../../../components/noDataFound";
+import CreateShortcutKeyModal from "./CreateShortcutKeyModal";
+import toast from "react-hot-toast";
 
-// Define a type for Product
-type Product = {
-  _id: string;
-  name: string;
-  shortcutKey: number;
-  quantity: number;
-  [key: string]: any; // allows additional dynamic keys
-};
+
 
 const ShortcutPage = () => {
-  const [data, setData] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
-  const [notFound, setNotFound] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]); // Properly typed
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const getProductData = useQuery({
-    queryKey: ["getProductData"],
-    queryFn: () => getProductApi(``),
-  });
+    const [openModal , setOpenModal] = useState(false)
+    const [modalId , setModalId] = useState('')
+    const [modalType , setModalType] = useState('')
+    const [loading , setLoading] = useState(false)
 
-  useEffect(() => {
-    if (getProductData?.data?.data?.result) {
-      setData(getProductData.data.data.result);
-    }
-    inputRef.current?.focus();
-  }, [getProductData]);
-
-  const addOrUpdateProduct = (shortcutKey: number) => {
-    const match = data?.find((item: any) => item.shortcutKey === shortcutKey);
-    if (!match) {
-      setNotFound(true);
-      return;
-    }
-
-    setNotFound(false);
-
-    setSelectedProducts((prev) => {
-      const existing = prev.find((p) => p._id === match._id);
-      if (existing) {
-        return prev.map((p) =>
-          p._id === match._id ? { ...p, quantity: p.quantity + 1 } : p
-        );
-      } else {
-        return [...prev, { ...match, quantity: 1 }];
-      }
+    const getProductData = useQuery({
+        queryKey: ["getProductData"],
+        queryFn: () => getProductApi(``),
     });
 
-    setSearch(""); // Reset input
-  };
+    const shorcutData = getProductData?.data?.data?.result?.filter((idx: any) => idx?.shortcutKey)
 
-  const updateLastQuantity = (delta: number) => {
-    if (selectedProducts.length === 0) return;
-    const lastIndex = selectedProducts.length - 1;
-    const updated = [...selectedProducts];
-    updated[lastIndex].quantity = Math.max(
-      1,
-      (updated[lastIndex].quantity || 1) + delta
-    );
-    setSelectedProducts(updated);
-  };
+    console.log(shorcutData?.length);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      const shortcut = Number(search.trim());
-      if (!isNaN(shortcut)) {
-        addOrUpdateProduct(shortcut);
-      }
-    } else if (e.key === "+") {
-      updateLastQuantity(1);
-    } else if (e.key === "-") {
-      updateLastQuantity(-1);
-    }
-  };
-
-  console.log(selectedProducts);
-  
-
-  return (
-    <>
-      <div className="h-full pt-28 lg:pt-32 px-[4%] pb-10">
-        <div className="flex justify-center w-[80%] lg:w-[60%] mx-auto">
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Enter Shortcut Key..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value.replace(/\D/g, "")) // Only digits
+    const handleDeleteShortcutKey = async (id :any) =>{
+        try{
+            setLoading(true)
+            const deleteApi = await deleteProductShortcutKeyApi(id)
+            if(deleteApi?.status === 200){
+                toast.success(deleteApi?.data?.msg)
+                getProductData.refetch()
             }
-            onKeyDown={handleKeyDown}
-            className="bg-white/10 px-3 pt-[6px] pb-[9px] rounded-md placeholder:text-white/70 placeholder:text-xs w-full border-[1.5px] text-white border-[#f1f6fd61] outline-none"
-          />
-        </div>
+        }catch(err){
+            console.log(err)            
+        }finally{
+            setLoading(false)
+        }
+    }
 
-        {notFound && (
-          <div className="text-red-500 text-center mt-3">
-            No matching product found.
-          </div>
-        )}
+    return (
+        <>
+            <div className="h-full pt-28 lg:pt-32 px-[4%] pb-10">
+                <div className="flex justify-between flex-wrap md:flex-nowrap gap-2 items-center">
+                    <p className="text-white text-lg font-semibold">Shortcut Key Data</p>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => { setOpenModal(true), setModalType('create'), setModalId('') }}
+                            className="px-3 py-2 flex  justify-center items-center gap-1 border-[1.5px] rounded-md bg-primaryColor hover:bg-white/20 hover:text-primaryColor border-[#f1f6fd61] hover:border-primaryColor">
+                            <IoMdAdd />Create
+                        </button>
+                    </div>
+                </div>
+                 <div className="mt-5">
+                 {shorcutData?.length > 0 ? (
+                                            <div className="block w-full mt-2 overflow-x-auto border border-white/30 rounded-xl hide-scrollbar">
+                                                <table className="min-w-full overflow-y-visible whitespace-nowrap ">
+                                                    <thead className="text-white/80 bg-white/15">
+                                                        <tr className="">
+                                                            <td className="p-3 font-medium font-Montserrat ">S.NO</td>
+                                                            <td className="p-3 font-medium capitalize font-Montserrat">Product Id</td>
+                                                            <td className="p-3 font-medium capitalize font-Montserrat">Name</td>
+                                                            <td className="p-3 font-medium capitalize font-Montserrat">Shortcut Key</td>
+                                                            <td className="p-3 font-medium capitalize font-Montserrat">Action</td>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="">
+                
+                                                        {shorcutData?.map((idx: any, index: number) => (
+                                                            <tr key={index} className={"bg-white/15 border-t border-b border-white/5"}>
+                                                                <td className="p-3 text-white/80">{index + 1}.</td>
+                                                                <td className="p-3">
+                                                                    <p className="font-medium text-white">{idx?.productId ? idx?.productId : "-"}</p>
+                                                                </td>
+                                                                <td className="p-3">
+                                                                    <p className="font-semibold text-white">{idx?.name ? idx?.name : "-"}</p>
+                                                                </td>
+                                                                <td className="p-3">
+                                                                    <div className="text-white ">{idx?.shortcutKey}</div>
+                                                                </td>
+                                                                <td className="flex gap-2 p-3">
+                                                                    <button
+                                                                        className="flex items-center justify-center w-8 h-8 border rounded-md bg-white/10 border-primaryColor text-primaryColor hover:bg-primaryColor hover:text-black"
+                                                                    onClick={() => { setOpenModal(true), setModalType('update'), setModalId(idx?._id) }}
+                                                                    >
+                                                                        <FaEdit className="" />
+                                                                    </button>
+                                                                    <button
+                                                                        className="flex items-center justify-center w-8 h-8 border rounded-md border-primaryColor bg-white/10 text-primaryColor hover:bg-primaryColor hover:text-black"
+                                                                    onClick={() =>handleDeleteShortcutKey(idx?._id)}
+                                                                    >
+                                                                        <MdDelete className="" />
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                
+                
+                
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : <NoDataFound/>}
+                 </div>
+            </div>
 
-        {/* ✅ Show selected products */}
-        <div className="mt-10 max-w-2xl mx-auto text-white">
-          <h2 className="text-lg font-semibold mb-3">Selected Products:</h2>
-          {selectedProducts.length === 0 ? (
-            <p className="text-gray-400">No products added.</p>
-          ) : (
-            <ul className="space-y-2">
-              {selectedProducts.map((item) => (
-                <li
-                  key={item._id}
-                  className="flex justify-between bg-white/10 px-4 py-2 rounded"
-                >
-                  <span>{item.name}</span>
-                  <span>Qty: {item.quantity}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      {(getProductData?.isLoading || getProductData.isFetching) && (
-        <LoaderScreen />
-      )}
-    </>
-  );
+            {openModal && <CreateShortcutKeyModal openModal={openModal} handleClose={()=>setOpenModal(!openModal)} modalId={modalId} modalType={modalType}
+                refetch={()=>getProductData?.refetch()}/>}
+            {(getProductData?.isLoading || getProductData.isFetching || loading) && (
+                <LoaderScreen />
+            )}
+        </>
+    );
 };
 
 export default ShortcutPage;
