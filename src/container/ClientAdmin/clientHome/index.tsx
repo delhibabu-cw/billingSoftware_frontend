@@ -12,7 +12,7 @@ import { TiInputChecked } from "react-icons/ti";
 import CreateBillModal from "./CreateBillModal";
 import LoaderScreen from "../../../components/animation/loaderScreen/LoaderScreen";
 import { isFormatDate, isFormatTime } from "../../../utils/helper";
-import NoImg from  "../../../assets/images/noDataFound/noImage.jpg"
+import NoImg from "../../../assets/images/noDataFound/noImage.jpg"
 
 // type Product = {
 //     _id: string;
@@ -28,6 +28,8 @@ const ClientHome = () => {
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
     const [openModal, setOpenModal] = useState(false)
+    const searchInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const lastToggledIndexRef = useRef<number | null>(null);
     // const [billData, setBillData] = useState<any>(null);
 
     const getProfileData = useQuery({
@@ -78,10 +80,52 @@ const ClientHome = () => {
         ));
     }, []);
 
+    // const toggleButton = (index: number) => {
+    //     setToggleStates((prev) => ({ ...prev, [index]: !prev[index] }));
+    //     setSearchQueries((prev) => ({ ...prev, [index]: "" }));
+
+    //     setTimeout(() => {
+    //         searchInputRefs.current[index]?.focus(); // Now TS knows this has `focus`
+    //     }, 0);
+    // };
+
     const toggleButton = (index: number) => {
-        setToggleStates((prev) => ({ ...prev, [index]: !prev[index] }));
-        setSearchQueries((prev) => ({ ...prev, [index]: "" }))
-    };
+        setToggleStates((prev) => {
+          const wasOpen = prev[index];
+          const newState = { ...prev, [index]: !wasOpen };
+      
+          // If closing and no input typed, focus back on inputRef
+          if (wasOpen && !(searchQueries[index] || "").trim()) {
+            setTimeout(() => {
+              inputRef.current?.focus();
+            }, 0);
+          }
+      
+          return newState;
+        });
+      
+        setSearchQueries((prev) => ({ ...prev, [index]: "" }));
+        lastToggledIndexRef.current = index;
+      
+        // If opening, focus the search input
+        setTimeout(() => {
+          if (!toggleStates[index]) {
+            searchInputRefs.current[index]?.focus();
+      
+            // Start idle timer: if user doesn't type in 4 seconds, focus back to inputRef
+            const idleTimeout = setTimeout(() => {
+              if (!(searchQueries[index] || "").trim()) {
+                inputRef.current?.focus();
+              }
+            }, 4000);
+            console.log(idleTimeout);
+            
+            // Optional: Clear timeout if user types (requires listener)
+          }
+        }, 0);
+      };
+      
+      
 
 
     // 🟢 Memoizing filtered items outside map
@@ -182,30 +226,30 @@ const ClientHome = () => {
             const currentProducts = selectedProductsRef.current;
 
             if (!currentProducts || currentProducts.length === 0) {
-              toast.error("No products selected.");
-              return;
+                toast.error("No products selected.");
+                return;
             }
 
-              // Ensure totalAmount is calculated here
-        const totalAmount = currentProducts.reduce((total, product) => {
-            const gstAmountPerUnit = (profileData?.overAllGstToggle === "on" &&  product?.isgst) ? product.gstAmount : 0;
-            const totalGstAmount = gstAmountPerUnit * product.quantitySelected;
+            // Ensure totalAmount is calculated here
+            const totalAmount = currentProducts.reduce((total, product) => {
+                const gstAmountPerUnit = (profileData?.overAllGstToggle === "on" && product?.isgst) ? product.gstAmount : 0;
+                const totalGstAmount = gstAmountPerUnit * product.quantitySelected;
 
-            const productTotalPrice = (product.productAddedFromStock === "yes"
-                ? product?.actualPrice
-                : product.price) * product.quantitySelected;
+                const productTotalPrice = (product.productAddedFromStock === "yes"
+                    ? product?.actualPrice
+                    : product.price) * product.quantitySelected;
 
-            return total + productTotalPrice + totalGstAmount;
-        }, 0);
+                return total + productTotalPrice + totalGstAmount;
+            }, 0);
 
             setLoading(true);
-            console.log("selectedProducts payload",selectedProducts);
-            
+            console.log("selectedProducts payload", selectedProducts);
+
             const payload = {
                 totalAmount,
                 selectedProducts: currentProducts?.map((idx: any) => {
                     const gstAmountPerUnit =
-                    (profileData?.overAllGstToggle === "on" &&  idx?.isgst) ? idx.gstAmount : 0;
+                        (profileData?.overAllGstToggle === "on" && idx?.isgst) ? idx.gstAmount : 0;
                     const totalGstAmount = gstAmountPerUnit * idx.quantitySelected;
 
                     return {
@@ -233,8 +277,8 @@ const ClientHome = () => {
                 }),
             };
 
-            console.log("payload",payload);
-            
+            console.log("payload", payload);
+
             const postApi = await postCreateBillApi(payload);
 
             if (postApi?.status === 200) {
@@ -250,7 +294,7 @@ const ClientHome = () => {
 
                 await getBillPageData.refetch();
                 handlePrint(billPayload, getBillPageData?.data?.data?.result);
-                
+
                 // ✅ Wait for product data to update
                 await getProductCategoryData.refetch(); // <- move this here
                 await getProductData.refetch(); // <- move this here
@@ -266,18 +310,18 @@ const ClientHome = () => {
 
     const handleCreateBillFromRef = async () => {
         const currentProducts = selectedProductsRef.current;
-      
+
         if (!currentProducts || currentProducts.length === 0) {
-          toast.error("No products selected.");
-          return;
+            toast.error("No products selected.");
+            return;
         }
-      
+
         // setSearch(""); // ✅ Force-clear before printing
         // Everything inside this function is same as handleCreateBill,
         // but it reads `selectedProductsRef.current` directly.
         // You can extract common logic if needed.
         await handleCreateBill(); // optional: reuse if your `handleCreateBill` reads from `ref`
-      };
+    };
 
     const handlePrint = (billData: any, billPageData: any) => {
         const printContent = generatePrintContent(billData, billPageData);
@@ -470,7 +514,7 @@ const ClientHome = () => {
             }).join("")}
               </tbody>
               <tfoot class="font-medium ">
-                ${billData?.selectedProducts.some((item:any) => item.gstAmount > 0)
+                ${billData?.selectedProducts.some((item: any) => item.gstAmount > 0)
                 ? `
                       <tr>
                         <td colspan="4" class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">Sub Total</td>
@@ -510,52 +554,56 @@ const ClientHome = () => {
     const getProductData = useQuery({
         queryKey: ["getProductData"],
         queryFn: () => getProductApi(``),
-      });
-    
-      useEffect(() => {
-        if (getProductData?.data?.data?.result) {
-          setData(getProductData?.data?.data?.result);
-        }
-        inputRef.current?.focus();
-      }, [getProductData]);
+    });
 
-      useEffect(() => {
+    useEffect(() => {
+        if (getProductData?.data?.data?.result) {
+            setData(getProductData?.data?.data?.result);
+        }
+        // inputRef.current?.focus();
+    }, [getProductData]);
+
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
+
+    useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
-          if (window.location.pathname !== "/home") return;
-      
-          const key = e.key.toLowerCase();
-          if (key === 'p' || key === ' ') {
-            e.preventDefault(); // Prevent scrolling
-      
-            const shortcutKey = Number(search);
-            if (!isNaN(shortcutKey) && search !== "") {
-              addOrUpdateProduct(shortcutKey);
-              setTimeout(() => setSearch(""), 0); // Ensure search clears AFTER product added
+            if (window.location.pathname !== "/home") return;
+
+            const key = e.key.toLowerCase();
+            if (key === 'p' || key === ' ') {
+                e.preventDefault(); // Prevent scrolling
+
+                const shortcutKey = Number(search);
+                if (!isNaN(shortcutKey) && search !== "") {
+                    addOrUpdateProduct(shortcutKey);
+                    setTimeout(() => setSearch(""), 0); // Ensure search clears AFTER product added
+                }
+
+                const currentProducts = selectedProductsRef.current;
+                if (!currentProducts || currentProducts.length === 0) {
+                    toast.error("No products selected.");
+                    return;
+                }
+
+                // 🔥 New logic: show modal instead of printing if customer/employee toggles are on
+                if (profileData?.customerToggle === 'on' || profileData?.employeeToggle === 'on') {
+                    setOpenModal(true);
+                    return; // Don't proceed to create bill immediately
+                }
+
+                handleCreateBillFromRef(); // Proceed to print
             }
-      
-            const currentProducts = selectedProductsRef.current;
-            if (!currentProducts || currentProducts.length === 0) {
-              toast.error("No products selected.");
-              return;
-            }
-      
-            // 🔥 New logic: show modal instead of printing if customer/employee toggles are on
-            if (profileData?.customerToggle === 'on' || profileData?.employeeToggle === 'on') {
-              setOpenModal(true);
-              return; // Don't proceed to create bill immediately
-            }
-      
-            handleCreateBillFromRef(); // Proceed to print
-          }
         };
-      
+
         window.addEventListener("keydown", handleKeyPress);
         return () => window.removeEventListener("keydown", handleKeyPress);
-      }, [search, profileData]); // Include `profileData` and `search` in deps
-      
-      
+    }, [search, profileData]); // Include `profileData` and `search` in deps
 
-      
+
+
+
     //   useEffect(() => {
     //     const handleKeyPress = (e: KeyboardEvent) => {
     //       if ((e.key.toLowerCase() === 'p' || e.key === " ") && window.location.pathname === "/home") {
@@ -567,15 +615,15 @@ const ClientHome = () => {
     //         handleCreateBillFromRef(); // ✅ use new function
     //       }
     //     };
-      
+
     //     window.addEventListener("keydown", handleKeyPress);
     //     return () => window.removeEventListener("keydown", handleKeyPress);
     //   }, []);
 
-      useEffect(() => {
+    useEffect(() => {
         selectedProductsRef.current = selectedProducts;
-      }, [selectedProducts]);
-      
+    }, [selectedProducts]);
+
 
     //   const addOrUpdateProduct = (shortcutKey: number) => {
     //     const match = data?.find((item: any) => item.shortcutKey === shortcutKey);
@@ -583,9 +631,9 @@ const ClientHome = () => {
     //       setNotFound(true);
     //       return;
     //     }
-      
+
     //     setNotFound(false);
-      
+
     //     setSelectedProducts((prev) => {
     //       const existing = prev.find((p) => p._id === match._id);
     //       if (existing) {
@@ -601,7 +649,7 @@ const ClientHome = () => {
     //         return [...prev, { ...match, quantitySelected: 1 }];
     //       }
     //     });
-      
+
     //     setSearch(""); // Reset input
     //   };
 
@@ -612,9 +660,9 @@ const ClientHome = () => {
     //       setNotFound(true);
     //       return;
     //     }
-      
+
     //     setNotFound(false);
-      
+
     //     setSelectedProducts((prev) => {
     //       const existing = prev.find((p) => p._id === match._id);
     //       if (existing) {
@@ -628,62 +676,62 @@ const ClientHome = () => {
     //         return [...prev, { ...match, quantitySelected: 1 }];
     //       }
     //     });
-      
+
     //     setSearch(""); // Reset input
     //   };
 
     const addOrUpdateProduct = (shortcutKey: number) => {
         const match = data?.find((item: any) => item.shortcutKey === shortcutKey);
-      
+
         if (!match) {
-          setNotFound(true);
-        //   toast.error("Product not found.");
-          return;
+            setNotFound(true);
+            //   toast.error("Product not found.");
+            return;
         }
-      
+
         setNotFound(false);
 
-         // If product is stock-based and count is 0
+        // If product is stock-based and count is 0
         if (match.productAddedFromStock === "yes" && match.count === 0) {
             toast.error(`No stock available for "${match.name}"`);
             return;
         }
-      
-        setSelectedProducts((prev) => {
-          const existing = prev.find((p) => p._id === match._id);
-      
-          // If product comes from stock, respect count
-          if (match.productAddedFromStock === "yes") {
-            if (match.count <= 0) return prev; // No stock
-      
-            if (existing) {
-              const newQty = (existing.quantitySelected || 1) + 1;
-              if (newQty > match.count) return prev; // Exceeds stock
-              return prev.map((p) =>
-                p._id === match._id ? { ...p, quantitySelected: newQty } : p
-              );
-            } else {
-              return [...prev, { ...match, quantitySelected: 1 }];
-            }
-          }
-      
-          // For non-stock items, allow normal behavior
-          if (existing) {
-            return prev.map((p) =>
-              p._id === match._id
-                ? { ...p, quantitySelected: (p.quantitySelected || 1) + 1 }
-                : p
-            );
-          } else {
-            return [...prev, { ...match, quantitySelected: 1 }];
-          }
-        });
-      
-        setSearch(""); // Reset input
-      };
-      
 
-      
+        setSelectedProducts((prev) => {
+            const existing = prev.find((p) => p._id === match._id);
+
+            // If product comes from stock, respect count
+            if (match.productAddedFromStock === "yes") {
+                if (match.count <= 0) return prev; // No stock
+
+                if (existing) {
+                    const newQty = (existing.quantitySelected || 1) + 1;
+                    if (newQty > match.count) return prev; // Exceeds stock
+                    return prev.map((p) =>
+                        p._id === match._id ? { ...p, quantitySelected: newQty } : p
+                    );
+                } else {
+                    return [...prev, { ...match, quantitySelected: 1 }];
+                }
+            }
+
+            // For non-stock items, allow normal behavior
+            if (existing) {
+                return prev.map((p) =>
+                    p._id === match._id
+                        ? { ...p, quantitySelected: (p.quantitySelected || 1) + 1 }
+                        : p
+                );
+            } else {
+                return [...prev, { ...match, quantitySelected: 1 }];
+            }
+        });
+
+        setSearch(""); // Reset input
+    };
+
+
+
     //   const updateLastQuantity = (delta: number) => {
     //     if (selectedProducts.length === 0) return;
     //     const lastIndex = selectedProducts.length - 1;
@@ -700,14 +748,14 @@ const ClientHome = () => {
     //     const lastIndex = selectedProducts.length - 1;
     //     const updated = [...selectedProducts];
     //     const current = updated[lastIndex];
-      
+
     //     // Find original data to get current count
     //     const original = data?.find((p: any) => p._id === current._id);
     //     if (!original) return;
-      
+
     //     const newQty = (current.quantitySelected || 1) + delta;
     //     if (newQty < 1 || newQty > original.count) return; // Validate limits
-      
+
     //     updated[lastIndex].quantitySelected = newQty;
     //     setSelectedProducts(updated);
     //   };
@@ -717,41 +765,41 @@ const ClientHome = () => {
         const lastIndex = selectedProducts.length - 1;
         const updated = [...selectedProducts];
         const current = updated[lastIndex];
-      
+
         const original = data?.find((p: any) => p._id === current._id);
         if (!original) return;
-      
+
         const newQty = (current.quantitySelected || 1) + delta;
-      
+
         // Only validate limit for stock-based products
         if (original.productAddedFromStock === "yes") {
-          if (newQty < 1 || newQty > original.count) return;
+            if (newQty < 1 || newQty > original.count) return;
         } else {
-          if (newQty < 1) return;
+            if (newQty < 1) return;
         }
-      
+
         updated[lastIndex].quantitySelected = newQty;
         setSelectedProducts(updated);
-      };
-      
-      
-    
-      const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    };
+
+
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         // if (e.key === "Enter" || e.key === " ") {
         if (e.key === "Enter") {
-          const shortcut = Number(search.trim());
-        //   if (!isNaN(shortcut)) {
+            const shortcut = Number(search.trim());
+            //   if (!isNaN(shortcut)) {
             addOrUpdateProduct(shortcut);
-        //   }
+            //   }
         } else if (e.key === "+") {
-          updateLastQuantity(1);
+            updateLastQuantity(1);
         } else if (e.key === "-") {
-          updateLastQuantity(-1);
-        }else if (e.key === "Delete" || e.key.toLowerCase() === "d") {
+            updateLastQuantity(-1);
+        } else if (e.key === "Delete" || e.key.toLowerCase() === "d") {
             // Remove the last selected product
             setSelectedProducts((prev) => prev.slice(0, -1));
-          }
-      };    
+        }
+    };
 
 
     return (
@@ -767,23 +815,23 @@ const ClientHome = () => {
                         className="bg-white/10 backdrop-blur-none px-3 pt-[3px] pb-[6px] rounded-md placeholder:text-white/70 placeholder:text-xs w-fit md:max-w-xs md:w-full border-[1.5px] text-white border-[#f1f6fd61] outline-none"
                     /> */}
                     <div className="flex flex-col ">
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Enter Shortcut Key..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value.replace(/\D/g, "")) // Only digits
-            }
-            onKeyDown={handleKeyDown}
-            className="bg-white text-black px-3 pt-[6px] pb-[9px] w-fit rounded-full placeholder:text-sm border-[1.5px] border-[#f1f6fd61] outline-none caret-black"
-            />
-          {notFound && (
-          <div className="text-primaryColor text-xs">
-            No matching product found.
-          </div>
-        )}
-        </div>
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            placeholder="Enter Shortcut Key..."
+                            value={search}
+                            onChange={(e) =>
+                                setSearch(e.target.value.replace(/\D/g, "")) // Only digits
+                            }
+                            onKeyDown={handleKeyDown}
+                            className="bg-white text-black px-3 pt-[6px] pb-[9px] w-fit rounded-full placeholder:text-sm border-[1.5px] border-[#f1f6fd61] outline-none caret-black"
+                        />
+                        {notFound && (
+                            <div className="text-primaryColor text-xs">
+                                No matching product found.
+                            </div>
+                        )}
+                    </div>
 
                     <div className="flex flex-wrap items-center gap-3 ">
                         <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-3xl bg-white/10 border-primaryColor border-[1.5px] text-primaryColor cursor-pointer hover:bg-primaryColor hover:text-black"
@@ -911,6 +959,7 @@ const ClientHome = () => {
                                             {/* Search */}
                                             <div className="flex justify-center w-full mx-auto">
                                                 <input
+                                                    ref={(el: any) => (searchInputRefs.current[index] = el)}
                                                     type="search"
                                                     placeholder="Search Products Here..."
                                                     value={searchQueries[index] || ""}
@@ -1193,7 +1242,7 @@ const ClientHome = () => {
                                                     type="button" onClick={() => handleCreateBill()}
                                                     className="px-3 py-2 font-semibold bg-primaryColor rounded-3xl ">Create Bill & Print</button>
                                                 {profileData?.billPageDetails === 'no' && <p onClick={() => navigate('/billPage')} className="flex items-center gap-1 mt-1 text-xs hover:cursor-pointer"><span className="text-lg text-red-500">*</span> BillPage is Not Added, Kindly Add It.</p>}
-                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -1210,7 +1259,7 @@ const ClientHome = () => {
             {(loading || getProductCategoryData?.isLoading || getProductCategoryData?.isFetching || getProfileData.isLoading || getProfileData.isFetching) && <LoaderScreen />}
 
             {openModal && <CreateBillModal openModal={openModal} handleClose={() => setOpenModal(!openModal)} totalAmount={totalAmount}
-                selectedProducts={selectedProducts}  clearSelectedProducts={() => setSelectedProducts([])} refetch={() => getProductCategoryData?.refetch()} />}
+                selectedProducts={selectedProducts} clearSelectedProducts={() => setSelectedProducts([])} refetch={() => getProductCategoryData?.refetch()} />}
 
             {/* <div className="!hidden">
                 <BillComponent billData={billData} />

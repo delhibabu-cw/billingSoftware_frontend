@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { getBillsApi } from '../../../api-service/client'
+import { getBillPageApi, getBillsApi } from '../../../api-service/client'
 import { isFormatDate, isFormatTime } from '../../../utils/helper'
 import { FaEye } from 'react-icons/fa6'
 import NoDataFound from '../../../components/noDataFound'
@@ -17,6 +17,12 @@ const ClientBills = () => {
   const [highlightDates, setHighlightDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(getCurrentDate());
 
+    //  const getProfileData = useQuery({
+    //       queryKey: ['getProfileData'],
+    //       queryFn: () => getProfileApi()
+    //   })
+  
+      // const profileData = getProfileData?.data?.data?.result;
 
   const getBillsData = useQuery({
     queryKey: ['getBillsData', search, selectedDate],
@@ -76,6 +82,175 @@ const ClientBills = () => {
     fetchDates();
   }, []);
 
+   const getBillPageData = useQuery({
+          queryKey: ['getBillPageData'],
+          queryFn: () => getBillPageApi(``),
+      })
+  
+      const billPageData = getBillPageData?.data?.data?.result;
+
+
+  const handlePrint = (billData: any, billPageData: any) => {
+    const printContent = generatePrintContent(billData, billPageData);
+    console.log(billData);
+    
+  
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.top = "-10000px";
+    iframe.style.left = "-10000px";
+    document.body.appendChild(iframe);
+  
+    const contentWindow = iframe.contentWindow;
+    if (!contentWindow) return;
+  
+    const doc = contentWindow.document;
+    doc.open();
+    doc.write(printContent);
+    doc.close();
+  
+    iframe.onload = () => {
+      setTimeout(() => {
+        contentWindow.focus();
+        contentWindow.print();
+        
+        // handleClose()
+        // ✅ Immediately refetch your API after triggering print
+        // getProductCategoryData.refetch();
+  
+        // Optional: cleanup the iframe after a second
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      }, 500);
+    };
+  };
+        
+        const generatePrintContent = (billData:any, billPageData:any) => {
+
+          console.log(billData);
+          
+          const grandTotalAmount = billData?.reduce(
+            (sum: number, bill: any) => sum + (bill.totalAmount || 0),
+            0
+          );
+  
+          const fontClass = billPageData?.font || "";
+          let googleFontLink = "";
+          let customFontStyle = "";
+          
+          if (fontClass) {
+            const fontName = fontClass.replace("font-", "").replace(/\+/g, " ");
+            googleFontLink = `<link href="https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap" rel="stylesheet">`;
+            customFontStyle = `<style>.${fontClass} { font-family: '${fontName}', sans-serif; }</style>`;
+          }
+          
+          
+          return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Print Bill</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        ${googleFontLink}
+        ${customFontStyle}
+      </head>
+      <body>
+        <div class="!p-0 !mb-5 !mt-0 w-full h-full ${billPageData?.printSize} ${billPageData?.font}">
+        <!-- Invoice Info -->
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <p class="font-bold">Date Bill</p>
+      
+           <p class=" flex flex-wrap items-center text-[11px] ml-auto">
+              <span class="flex items-center gap-1">
+                  <!-- Calendar Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="!h-3 !w-3 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 6h16a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  ${isFormatDate(billData[0]?.createdAt)}
+              </span>
+              </p>
+          </div>
+          
+          <!-- Header Section -->
+          <div class="flex flex-col items-center gap-2 mt-3">
+            ${billPageData?.header?.logo?.logo_Url
+              ? `<img
+                  src="${billPageData?.header?.logo?.logo_Url}"
+                  alt="Logo"
+                  class="${billPageData?.header?.logo?.logoWidth || "w-36"} ${billPageData?.header?.logo?.logoHeight || "h-36"}
+                         ${billPageData?.header?.logo?.logoCircle ? "rounded-full" : "rounded"}
+                         ${billPageData?.header?.logoZoom ? "object-cover" : "object-fill"}
+                         shadow"
+                />`
+              : ""
+          }
+      
+            ${billPageData?.header?.businessName
+              ? `<h1 class="text-2xl font-bold text-center capitalize">${billPageData?.header?.businessName}</h1>`
+              : ""
+          }
+      
+            ${billPageData?.header?.address
+              ? `<p class="text-center text-xs capitalize">${billPageData?.header?.address}</p>`
+              : ""
+          }
+          </div>
+          ${billPageData?.header?.contact
+            ? `<div class='flex gap-1 justify-center items-center mt-1'>
+                <!-- Phone Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V8a1 1 0 01-.293.707L8.414 10.414a16.016 16.016 0 007.172 7.172l1.707-1.707a1 1 0 01.707-.293h1.586a1 1 0 011 1v2.586a2 2 0 01-2 2A17 17 0 013 5z" />
+                </svg>
+                <p class="text-xs">${billPageData?.header?.contact}</p>
+            </div>`
+            : ""
+        }
+      
+          <!-- Title -->
+           ${billPageData?.showTable ? `<hr class="my-1 border-dashed border-black/80" />` : ``}
+          <h2 class="text-center font-semibold text-lg">Cash Bill</h2>
+          <hr class=" ${billPageData?.showTable ? `` : 'my-[3px]'} border-dashed border-black/80" />
+      
+              <!-- Table -->
+        <table class="w-[98%] ${billPageData?.showTable ? "border-black/50 border border-collapse" : "border-none"} text-xs mx-auto ${billPageData?.showTable ? `mt-2` : ''}">
+            <thead>
+              <tr class="bg-gray-400 ${billPageData?.showTable ? "border-black/50 border" : "border-b border-dashed border-black"}">
+                <th class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">S.No</th>
+                <th class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">BillNo</th>
+                <th class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="${billPageData?.showTable ? "border-black/50 border" : "border-b border-dashed border-black"}">
+              ${billData?.map((item: any, index: any) => {
+              return `
+                  <tr >
+                    <td class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"} text-center">${index + 1}</td>
+                    <td class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"} capitalize !whitespace-normal">${item.billNo}</td>
+                    <td class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"} text-center whitespace-nowrap">₹ ${item?.totalAmount.toLocaleString("en-IN")}</td>
+                  </tr>
+                `;
+          }).join("")}
+            </tbody>
+            <tfoot class="font-medium ">
+              <tr class="font-semibold text-sm">
+                <td colspan="2" class="p-1 border ${billPageData?.showTable ? "border-black/50 border" : "border-none"}">Total</td>
+                <td class="p-1 border text-center ${billPageData?.showTable ? "border-black/50 border" : "border-none"} whitespace-nowrap">₹ ${Number(grandTotalAmount).toLocaleString("en-IN")}</td>
+              </tr>
+            </tfoot>
+          </table>
+      
+          ${billPageData?.footer?.terms
+              ? `<p class="text-center text-xs mt-4">${billPageData?.footer?.terms}</p>`
+              : ""
+          }
+          <p class="!my-2 text-[11px] !text-center !mb-20">Billing Partner CORPWINGS IT SERVICE , 6380341944</p>
+        </div>
+      </body>
+      </html>
+      `;  
+        };
 
 
   return (
@@ -92,6 +267,9 @@ const ClientBills = () => {
               className="bg-white/10 backdrop-blur-none px-3 pt-[3px] pb-[6px] rounded-md placeholder:text-white/70 placeholder:text-xs w-fit md:max-w-xs md:w-full border-[1.5px] text-white border-[#f1f6fd61] outline-none"
             />
             <div className="flex flex-wrap items-center gap-3">
+              <button
+             onClick={()=>handlePrint(billsData,billPageData)}
+              className='flex items-center gap-2 px-3 py-2 bg-primaryColor rounded-md'>Print Today Bill</button>
               <div className='flex items-center gap-2 px-3 py-2 bg-primaryColor rounded-3xl'>
                 <div className='flex gap-1 text-black/80'>
                   <p>Total Amount</p>
