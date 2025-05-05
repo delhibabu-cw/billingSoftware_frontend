@@ -160,7 +160,7 @@ const ClientHome = () => {
 
         return selectedProducts.reduce((sum: any, product: any) => {
             const unitPrice = product?.productAddedFromStock === 'yes' ? product?.actualPrice : product?.price;
-            const gstPerUnit = profileData?.overAllGstToggle === 'on' ? product?.gstAmount : 0;
+            const gstPerUnit = (profileData?.overAllGstToggle === 'on' && product?.isgst) ? product?.gstAmount : 0;
 
             const totalPerItem = (unitPrice + gstPerUnit) * product?.quantitySelected;
             return sum + totalPerItem;
@@ -188,7 +188,7 @@ const ClientHome = () => {
 
               // Ensure totalAmount is calculated here
         const totalAmount = currentProducts.reduce((total, product) => {
-            const gstAmountPerUnit = profileData?.overAllGstToggle === "on" ? product.gstAmount : 0;
+            const gstAmountPerUnit = (profileData?.overAllGstToggle === "on" &&  product?.isgst) ? product.gstAmount : 0;
             const totalGstAmount = gstAmountPerUnit * product.quantitySelected;
 
             const productTotalPrice = (product.productAddedFromStock === "yes"
@@ -205,7 +205,7 @@ const ClientHome = () => {
                 totalAmount,
                 selectedProducts: currentProducts?.map((idx: any) => {
                     const gstAmountPerUnit =
-                        profileData?.overAllGstToggle === "on" ? idx.gstAmount : 0;
+                    (profileData?.overAllGstToggle === "on" &&  idx?.isgst) ? idx.gstAmount : 0;
                     const totalGstAmount = gstAmountPerUnit * idx.quantitySelected;
 
                     return {
@@ -221,7 +221,7 @@ const ClientHome = () => {
                                 ? idx?.actualPrice
                                 : idx.price) * idx.quantitySelected,
                         gstWithTotal:
-                            profileData?.overAllGstToggle === "on"
+                            (profileData?.overAllGstToggle === "on" && idx?.isgst)
                                 ? (idx?.productAddedFromStock === "yes"
                                     ? idx?.actualPrice
                                     : idx.price + idx.gstAmount) * idx.quantitySelected
@@ -529,8 +529,8 @@ const ClientHome = () => {
       
             const shortcutKey = Number(search);
             if (!isNaN(shortcutKey) && search !== "") {
-              addOrUpdateProduct(shortcutKey); // This may batch with setSearch
-              setTimeout(() => setSearch(""), 0); // 🔥 Ensure search clears AFTER product added
+              addOrUpdateProduct(shortcutKey);
+              setTimeout(() => setSearch(""), 0); // Ensure search clears AFTER product added
             }
       
             const currentProducts = selectedProductsRef.current;
@@ -539,13 +539,20 @@ const ClientHome = () => {
               return;
             }
       
+            // 🔥 New logic: show modal instead of printing if customer/employee toggles are on
+            if (profileData?.customerToggle === 'on' || profileData?.employeeToggle === 'on') {
+              setOpenModal(true);
+              return; // Don't proceed to create bill immediately
+            }
+      
             handleCreateBillFromRef(); // Proceed to print
           }
         };
       
         window.addEventListener("keydown", handleKeyPress);
         return () => window.removeEventListener("keydown", handleKeyPress);
-      }, [search]);
+      }, [search, profileData]); // Include `profileData` and `search` in deps
+      
       
 
       
@@ -630,7 +637,7 @@ const ClientHome = () => {
       
         if (!match) {
           setNotFound(true);
-          toast.error("Product not found.");
+        //   toast.error("Product not found.");
           return;
         }
       
@@ -740,7 +747,10 @@ const ClientHome = () => {
           updateLastQuantity(1);
         } else if (e.key === "-") {
           updateLastQuantity(-1);
-        }
+        }else if (e.key === "Delete" || e.key.toLowerCase() === "d") {
+            // Remove the last selected product
+            setSelectedProducts((prev) => prev.slice(0, -1));
+          }
       };    
 
 
@@ -766,8 +776,8 @@ const ClientHome = () => {
               setSearch(e.target.value.replace(/\D/g, "")) // Only digits
             }
             onKeyDown={handleKeyDown}
-            className="bg-white/10 px-3 pt-[6px] pb-[9px] w-fit rounded-md placeholder:text-white/70 placeholder:text-xs border-[1.5px] text-white border-[#f1f6fd61] outline-none"
-          />
+            className="bg-white text-black px-3 pt-[6px] pb-[9px] w-fit rounded-full placeholder:text-sm border-[1.5px] border-[#f1f6fd61] outline-none caret-black"
+            />
           {notFound && (
           <div className="text-primaryColor text-xs">
             No matching product found.
@@ -930,7 +940,7 @@ const ClientHome = () => {
                                                                 <div>
                                                                     <div className="flex flex-wrap items-center gap-[6px]">
                                                                         <p className="text-sm font-semibold text-white capitalize">
-                                                                            {item?.name?.length > 14 ? item?.name.slice(0, 14) + ".." : item?.name}
+                                                                            {item?.name?.length > 20 ? item?.name.slice(0, 20) + ".." : item?.name}
                                                                         </p>
                                                                         {item?.productAddedFromStock === 'yes' && (
                                                                             <p className="text-sm font-semibold text-white capitalize">({item?.quantity})</p>
@@ -1068,7 +1078,7 @@ const ClientHome = () => {
                                                     <div className="flex items-center justify-between w-full">
                                                         <div className="flex items-center gap-1">
                                                             <p className="text-sm font-bold text-white">
-                                                                {product?.name?.length > 14 ? product?.name.slice(0, 14) + ".." : product?.name}
+                                                                {product?.name?.length > 20 ? product?.name.slice(0, 20) + ".." : product?.name}
                                                             </p>
                                                             {product?.productAddedFromStock === 'yes' && (
                                                                 <p className="text-sm font-medium text-white">({product?.quantity})</p>
@@ -1200,7 +1210,7 @@ const ClientHome = () => {
             {(loading || getProductCategoryData?.isLoading || getProductCategoryData?.isFetching || getProfileData.isLoading || getProfileData.isFetching) && <LoaderScreen />}
 
             {openModal && <CreateBillModal openModal={openModal} handleClose={() => setOpenModal(!openModal)} totalAmount={totalAmount}
-                selectedProducts={selectedProducts} clearSelectedProducts={() => setSelectedProducts([])} refetch={() => getProductCategoryData?.refetch()} />}
+                selectedProducts={selectedProducts}  clearSelectedProducts={() => setSelectedProducts([])} refetch={() => getProductCategoryData?.refetch()} />}
 
             {/* <div className="!hidden">
                 <BillComponent billData={billData} />
