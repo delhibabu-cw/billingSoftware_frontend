@@ -572,7 +572,8 @@ const ClientHome = () => {
             if (window.location.pathname !== "/home") return;
 
             const key = e.key.toLowerCase();
-            if (key === 'p' || key === ' ') {
+            // if (key === 'p' || key === ' ') {
+            if (key === ' ') {
                 e.preventDefault(); // Prevent scrolling
 
                 const shortcutKey = Number(search);
