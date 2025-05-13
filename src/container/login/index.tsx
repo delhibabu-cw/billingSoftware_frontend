@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import logo from "../../assets/images/logo/originalLogo.png"
+import logo from "../../assets/images/logo/newlogo.png"
 import { useEffect, useState } from "react";
 import { Controller, Resolver, SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
