@@ -129,8 +129,8 @@ const Login = () => {
         <div className="absolute bottom-0 left-0 bg-white h-full w-[30px] 2xl:w-[35px] rounded-s-lg blur-[160px] 2xl:blur-[200px]"></div>
         <form onSubmit={handleSubmit(onSubmit)} className="">
           <div className="w-full p-4 border shadow-lg bg-black/30 md:p-6 md:max-w-md backdrop-blur-md rounded-2xl border-white/20 hide-scrollbar">
-            <img src={logo} className="w-[200px] mx-auto" alt="" />
-            <h2 className="mb-4 text-2xl font-extrabold text-center text-white uppercase md:text-3xl mt-7 font-Alice ">Billing Software</h2>
+            <img src={logo} className="w-[280px] ml-auto" alt="" />
+            {/* <h2 className="mb-4 text-2xl font-bold text-center text-white uppercase md:text-3xl mt-7 font-Poppins ">Billing Software</h2> */}
             <div className="grid grid-cols-12 mt-5 gap-y-2 2xl:gap-y-3">
               <div className="col-span-12 xl:col-span-12">
                 <label htmlFor="signin-username" className="form-label text-default text-[#c2c5c9] text-base font-inter">User Name</label>

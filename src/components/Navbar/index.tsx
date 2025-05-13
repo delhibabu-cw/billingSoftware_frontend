@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import logo from "../../assets/images/logo/originalLogo.png";
+import logo from "../../assets/images/logo/newlogo.png";
 import { BiLogOut, BiUser } from "react-icons/bi";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
